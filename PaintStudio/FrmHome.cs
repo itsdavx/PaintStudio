@@ -515,8 +515,12 @@ namespace PaintStudio
         {
             int x = Math.Max((pnlCenter.ClientSize.Width - canvasPicBox.Width) / 2, 0);
             int y = Math.Max((pnlCenter.ClientSize.Height - canvasPicBox.Height) / 2, 0);
-            canvasPicBox.Location = new Point(x, y);
-            pnlCenter.Invalidate();
+            var newLoc = new Point(x, y);
+            if (canvasPicBox.Location != newLoc)
+            {
+                canvasPicBox.Location = newLoc;
+                pnlCenter.Invalidate();
+            }
         }
 
         private Dictionary<ResizeHandle, Rectangle> GetHandleRects()
@@ -643,12 +647,18 @@ namespace PaintStudio
         {
             void RoundCorners(Control p, int radius)
             {
+                void UpdateRegion()
+                {
+                    using (var path = RoundedRectPath(p.ClientRectangle, radius))
+                        p.Region = new Region(path);
+                }
+                UpdateRegion();
+                p.Resize += (s, e) => UpdateRegion();
                 p.Paint += (s, e) => {
-                    var path = RoundedRectPath(p.ClientRectangle, radius);
                     e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    using (var path = RoundedRectPath(Rectangle.Inflate(p.ClientRectangle, -1, -1), radius))
                     using (var pen = new Pen(ColorBorder, 1.5f))
                         e.Graphics.DrawPath(pen, path);
-                    p.Region = new Region(path);
                 };
             }
             RoundCorners(pnlRight, CardRadius);
@@ -670,18 +680,19 @@ namespace PaintStudio
         // Sidebar derecho colapsable al pasar el mouse
         // ==================================================================
         private System.Windows.Forms.Timer sidebarTimer;
-        private const int SidebarExpanded = 250;
-        private const int SidebarCollapsed = 36;
+        // Valores recalculados sobre pnlRightShell (incluyen su Padding de 18px por lado)
+        private const int SidebarExpanded = 310;
+        private const int SidebarCollapsed = 70;
 
         private void SetupCollapsibleSidebar()
         {
-            pnlRight.Width = SidebarCollapsed;
+            pnlRightShell.Width = SidebarCollapsed;
             int target = SidebarCollapsed;
-            sidebarTimer = new System.Windows.Forms.Timer { Interval = 8 };
+            sidebarTimer = new System.Windows.Forms.Timer { Interval = 15 };
             sidebarTimer.Tick += (s, e) => {
-                int step = 18;
-                if (pnlRight.Width < target) pnlRight.Width = Math.Min(target, pnlRight.Width + step);
-                else if (pnlRight.Width > target) pnlRight.Width = Math.Max(target, pnlRight.Width - step);
+                int step = 24;
+                if (pnlRightShell.Width < target) pnlRightShell.Width = Math.Min(target, pnlRightShell.Width + step);
+                else if (pnlRightShell.Width > target) pnlRightShell.Width = Math.Max(target, pnlRightShell.Width - step);
                 else sidebarTimer.Stop();
                 CenterCanvas();
             };
@@ -776,6 +787,18 @@ namespace PaintStudio
                 prompt.AcceptButton = confirmation;
                 return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
             }
+        }
+    }
+
+    internal class BufferedPanel : Panel
+    {
+        public BufferedPanel()
+        {
+            SetStyle(ControlStyles.OptimizedDoubleBuffer
+                    | ControlStyles.AllPaintingInWmPaint
+                    | ControlStyles.UserPaint
+                    | ControlStyles.ResizeRedraw, true);
+            UpdateStyles();
         }
     }
 

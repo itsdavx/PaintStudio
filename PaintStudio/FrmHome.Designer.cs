@@ -26,18 +26,18 @@ namespace PaintStudio
             this.salirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlLeftShell = new System.Windows.Forms.Panel();
             this.pnlSidebarCard = new Guna.UI2.WinForms.Guna2Panel();
-            this.pnlRightShell = new System.Windows.Forms.Panel();
+            this.pnlRightShell = new BufferedPanel();
             this.pnlTransformsSpacer = new System.Windows.Forms.Panel();
             this.pnlCanvasSpacer = new System.Windows.Forms.Panel();
             this.pnlPropSpacer = new System.Windows.Forms.Panel();
-            this.pnlRight = new System.Windows.Forms.Panel();
+            this.pnlRight = new BufferedPanel();
             this.pnlCanvasSizeCard = new Guna.UI2.WinForms.Guna2Panel();
             this.pnlPropertiesCard = new Guna.UI2.WinForms.Guna2Panel();
             this.lstLayers = new System.Windows.Forms.ListBox();
             this.lblLayersTitle = new System.Windows.Forms.Label();
-            this.pnlTransforms = new System.Windows.Forms.Panel();
+            this.pnlTransforms = new BufferedPanel();
             this.lblTransform = new System.Windows.Forms.Label();
-            this.pnlCenter = new System.Windows.Forms.Panel();
+            this.pnlCenter = new BufferedPanel();
             this.canvasPicBox = new System.Windows.Forms.PictureBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatusCoords = new System.Windows.Forms.ToolStripStatusLabel();
@@ -384,8 +384,8 @@ namespace PaintStudio
         private Guna.UI2.WinForms.Guna2Button btnTri;
         private Guna.UI2.WinForms.Guna2Button btnStar;
 
-        private System.Windows.Forms.Panel pnlRight;
-        private System.Windows.Forms.Panel pnlRightShell;
+        private BufferedPanel pnlRight;
+        private BufferedPanel pnlRightShell;
         private System.Windows.Forms.Panel pnlTransformsSpacer;
         private System.Windows.Forms.Panel pnlCanvasSpacer;
         private System.Windows.Forms.Panel pnlPropSpacer;
@@ -393,10 +393,10 @@ namespace PaintStudio
         private Guna.UI2.WinForms.Guna2Panel pnlPropertiesCard;
         private System.Windows.Forms.Label lblLayersTitle;
         private System.Windows.Forms.ListBox lstLayers;
-        private System.Windows.Forms.Panel pnlTransforms;
+        private BufferedPanel pnlTransforms;
         private System.Windows.Forms.Label lblTransform;
 
-        private System.Windows.Forms.Panel pnlCenter;
+        private BufferedPanel pnlCenter;
         private System.Windows.Forms.PictureBox canvasPicBox;
 
         private System.Windows.Forms.StatusStrip statusStrip1;
