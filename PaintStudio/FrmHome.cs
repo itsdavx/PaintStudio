@@ -15,7 +15,25 @@ namespace PaintStudio
         private Button btnFillColorBtn;
         private CheckBox chkFillEnabled;
         private NumericUpDown numThickness;
-
+        private ToolTip toolTip1;
+        private static readonly Dictionary<string, string> ToolTipTexts = new Dictionary<string, string>
+        {
+            ["select"] = "Seleccionar objetos",
+            ["pencil"] = "Dibujo libre",
+            ["bezier"] = "Curva Bézier",
+            ["eraser"] = "Borrar trazos",
+            ["fill"] = "Rellenar con color",
+            ["picker"] = "Tomar color del lienzo",
+            ["text"] = "Insertar texto",
+            ["line"] = "Dibujar línea",
+            ["rect"] = "Dibujar rectángulo",
+            ["circle"] = "Dibujar círculo",
+            ["polygon"] = "Dibujar polígono",
+            ["triangle"] = "Dibujar triángulo",
+            ["star"] = "Dibujar estrella",
+            ["undo"] = "Deshacer (Ctrl+Z)",
+            ["redo"] = "Rehacer (Ctrl+Y)"
+        };
         private static readonly Color ColorBackground = ColorTranslator.FromHtml("#121212");
         private static readonly Color ColorSurface = ColorTranslator.FromHtml("#1E1E1E");
         private static readonly Color ColorCard = ColorTranslator.FromHtml("#252526");
@@ -59,6 +77,15 @@ namespace PaintStudio
             this.MaximizeBox = true;
             this.WindowState = FormWindowState.Maximized;
 
+            toolTip1 = new ToolTip
+            {
+                AutoPopDelay = 5000,
+                InitialDelay = 400,
+                ReshowDelay = 200,
+                ShowAlways = true,
+                BackColor = ColorCard,
+                ForeColor = Color.White
+            };
             // Construcción de paneles nuevos (Fase 1)
             BuildSidebar();
             BuildCanvasSizeCard();
@@ -126,7 +153,6 @@ namespace PaintStudio
             // Posiciona el lienzo centrado por primera vez
             CenterCanvas();
             ApplyRoundedPanels();
-            SetupCollapsibleSidebar();
             SetupFloatingShells();
             SetupStatusBar();
         }
@@ -220,6 +246,9 @@ namespace PaintStudio
                 onClick?.Invoke();
             };
             pnlSidebarCard.Controls.Add(btn);
+
+            if (ToolTipTexts.TryGetValue(iconKey, out var tip)) toolTip1.SetToolTip(btn, tip);
+
             if (isToolSelector) sidebarToolButtons.Add(btn);
             return btn;
         }
@@ -242,23 +271,27 @@ namespace PaintStudio
 
             var title = new Label { Text = "Lienzo", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ColorAccent, BackColor = Color.Transparent, Location = new Point(12, 10), AutoSize = true };
             pnlCanvasSizeCard.Controls.Add(title);
+            
 
             pnlCanvasSizeCard.Controls.Add(FieldLabel("Ancho", 12, 38));
             numCanvasWidth = new NumericUpDown { Location = new Point(12, 56), Width = 90, Minimum = 20, Maximum = 10000, Value = 800, BackColor = ColorCard, ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
             pnlCanvasSizeCard.Controls.Add(numCanvasWidth);
+            toolTip1.SetToolTip(numCanvasWidth, "Ancho del lienzo en píxeles");
 
             pnlCanvasSizeCard.Controls.Add(FieldLabel("Alto", 112, 38));
             numCanvasHeight = new NumericUpDown { Location = new Point(112, 56), Width = 90, Minimum = 20, Maximum = 10000, Value = 600, BackColor = ColorCard, ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
             pnlCanvasSizeCard.Controls.Add(numCanvasHeight);
+            toolTip1.SetToolTip(numCanvasHeight, "Alto del lienzo en píxeles");
 
             pnlCanvasSizeCard.Controls.Add(FieldLabel("Zoom (%)", 12, 86));
             numZoom = new NumericUpDown { Location = new Point(12, 104), Width = 90, Minimum = 10, Maximum = 500, Value = 100, BackColor = ColorCard, ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
             pnlCanvasSizeCard.Controls.Add(numZoom);
+            toolTip1.SetToolTip(numZoom, "Nivel de zoom del lienzo");
 
             btnResizeCanvas = new Guna2Button { Text = "Aplicar", Location = new Point(112, 104), Size = new Size(90, 28), BorderRadius = 8, FillColor = ColorAccent, ForeColor = Color.White, Font = new Font("Segoe UI", 8.5F) };
             btnResizeCanvas.HoverState.FillColor = ColorSelected;
             pnlCanvasSizeCard.Controls.Add(btnResizeCanvas);
-
+toolTip1.SetToolTip(btnResizeCanvas, "Aplicar nuevo tamaño de lienzo");
             pnlCanvasSizeCard.Height = 144;
         }
 
@@ -278,6 +311,7 @@ namespace PaintStudio
             pnlPropertiesCard.Controls.Add(title);
 
             pnlPropertiesCard.Controls.Add(FieldLabel("Línea", 12, 40));
+            
             btnColor = new Button { BackColor = Color.Black, Size = new Size(22, 22), Location = new Point(70, 36), FlatStyle = FlatStyle.Flat };
             btnColor.FlatAppearance.BorderColor = ColorAccent;
             btnColor.FlatAppearance.BorderSize = 1;
@@ -289,7 +323,7 @@ namespace PaintStudio
                 }
             };
             pnlPropertiesCard.Controls.Add(btnColor);
-
+toolTip1.SetToolTip(btnColor, "Color de línea");
             pnlPropertiesCard.Controls.Add(FieldLabel("Relleno", 110, 40));
             btnFillColorBtn = new Button { BackColor = Color.White, Size = new Size(22, 22), Location = new Point(168, 36), FlatStyle = FlatStyle.Flat };
             btnFillColorBtn.FlatAppearance.BorderColor = ColorAccent;
@@ -302,16 +336,18 @@ namespace PaintStudio
                 }
             };
             pnlPropertiesCard.Controls.Add(btnFillColorBtn);
+            toolTip1.SetToolTip(btnFillColorBtn, "Color de relleno");
 
             chkFillEnabled = new CheckBox { Text = "Activar relleno", Location = new Point(12, 68), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent };
             chkFillEnabled.CheckedChanged += (s, e) => { controller.FillEnabled = chkFillEnabled.Checked; };
             pnlPropertiesCard.Controls.Add(chkFillEnabled);
+            toolTip1.SetToolTip(chkFillEnabled, "Aplicar relleno al dibujar");
 
             pnlPropertiesCard.Controls.Add(FieldLabel("Grosor", 12, 96));
             numThickness = new NumericUpDown { Location = new Point(12, 114), Width = 70, Minimum = 1, Maximum = 30, Value = 2, BackColor = ColorCard, ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
             numThickness.ValueChanged += (s, e) => { controller.CurrentThickness = (int)numThickness.Value; };
             pnlPropertiesCard.Controls.Add(numThickness);
-
+            toolTip1.SetToolTip(numThickness, "Grosor del trazo");
             pnlPropertiesCard.Height = 150;
         }
 
@@ -334,6 +370,9 @@ namespace PaintStudio
             btnDeleteLayer.HoverState.FillColor = ColorTranslator.FromHtml("#A32D2D");
             btnDeleteLayer.Paint += (s, e) => ToolIcons.Draw(e.Graphics, btnDeleteLayer.ClientRectangle, "trash", Color.White);
             lblLayersTitle.Controls.Add(btnDeleteLayer);
+            toolTip1.SetToolTip(btnDeleteLayer, "Eliminar capa(s) seleccionada(s)");
+            toolTip1.SetToolTip(lblLayersTitle, "Administración de capas");
+            toolTip1.SetToolTip(lstLayers, "Lista de capas del lienzo");
         }
 
         // ==================================================================
@@ -367,23 +406,28 @@ namespace PaintStudio
             pnlTransforms.Controls.Add(StyledLabel("Rotación (°):", 10, yPos));
             numRot = StyledNumeric(120, yPos); numRot.Minimum = -360; numRot.Maximum = 360; numRot.Value = 0;
             pnlTransforms.Controls.Add(numRot);
+            toolTip1.SetToolTip(numRot, "Rotar figura seleccionada");
             yPos += 30;
             pnlTransforms.Controls.Add(StyledLabel("Escala (%):", 10, yPos));
             numScale = StyledNumeric(120, yPos); numScale.Minimum = 10; numScale.Maximum = 500; numScale.Value = 100;
             pnlTransforms.Controls.Add(numScale);
+            toolTip1.SetToolTip(numScale, "Escalar figura seleccionada");
             yPos += 30;
             pnlTransforms.Controls.Add(StyledLabel("Traslación X:", 10, yPos));
             numTransX = StyledNumeric(120, yPos); numTransX.Minimum = -1000; numTransX.Maximum = 1000; numTransX.Value = 0;
             pnlTransforms.Controls.Add(numTransX);
+            toolTip1.SetToolTip(numTransX, "Trasladar en X");
             yPos += 30;
             pnlTransforms.Controls.Add(StyledLabel("Traslación Y:", 10, yPos));
             numTransY = StyledNumeric(120, yPos); numTransY.Minimum = -1000; numTransY.Maximum = 1000; numTransY.Value = 0;
             pnlTransforms.Controls.Add(numTransY);
+            toolTip1.SetToolTip(numTransY, "Trasladar en Y");
             yPos += 34;
             Button btnApply = new Button() { Text = "Aplicar", Location = new Point(10, yPos), Width = 210, Height = 32, BackColor = ColorAccent, ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
             btnApply.FlatAppearance.BorderSize = 0;
             btnApply.Click += BtnApplyTransform_Click;
             pnlTransforms.Controls.Add(btnApply);
+            toolTip1.SetToolTip(btnApply, "Aplicar transformaciones a la capa seleccionada");
         }
 
         private void AssignMenuEvents()
@@ -674,30 +718,6 @@ namespace PaintStudio
             path.AddArc(r.X, r.Bottom - radius, radius, radius, 90, 90);
             path.CloseFigure();
             return path;
-        }
-
-        // ==================================================================
-        // Sidebar derecho colapsable al pasar el mouse
-        // ==================================================================
-        private System.Windows.Forms.Timer sidebarTimer;
-        // Valores recalculados sobre pnlRightShell (incluyen su Padding de 18px por lado)
-        private const int SidebarExpanded = 310;
-        private const int SidebarCollapsed = 70;
-
-        private void SetupCollapsibleSidebar()
-        {
-            pnlRightShell.Width = SidebarCollapsed;
-            int target = SidebarCollapsed;
-            sidebarTimer = new System.Windows.Forms.Timer { Interval = 15 };
-            sidebarTimer.Tick += (s, e) => {
-                int step = 24;
-                if (pnlRightShell.Width < target) pnlRightShell.Width = Math.Min(target, pnlRightShell.Width + step);
-                else if (pnlRightShell.Width > target) pnlRightShell.Width = Math.Max(target, pnlRightShell.Width - step);
-                else sidebarTimer.Stop();
-                CenterCanvas();
-            };
-            pnlRight.MouseEnter += (s, e) => { target = SidebarExpanded; sidebarTimer.Start(); };
-            pnlRight.MouseLeave += (s, e) => { target = SidebarCollapsed; sidebarTimer.Start(); };
         }
 
         private void SetupFloatingShells()
