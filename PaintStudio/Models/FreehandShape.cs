@@ -16,12 +16,12 @@ namespace PaintStudio.Models
         {
             if (Vertices.Count < 2) return;
             Color c = Selected ? Color.Red : LineColor;
-            
+
             for (int i = 0; i < Vertices.Count - 1; i++)
             {
                 var v1 = Vertices[i];
                 var v2 = Vertices[i + 1];
-                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y), 
+                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y),
                                     (int)Math.Round(v2.X), (int)Math.Round(v2.Y), c, Thickness);
             }
         }
@@ -33,4 +33,3 @@ namespace PaintStudio.Models
         }
     }
 }
-

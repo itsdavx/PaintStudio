@@ -25,4 +25,3 @@ namespace PaintStudio.Models
         }
     }
 }
-

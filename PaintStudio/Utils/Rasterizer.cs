@@ -15,7 +15,7 @@ namespace PaintStudio.Utils
         public Bitmap Canvas { get; private set; }
         private int Width;
         private int Height;
-        
+
         public Rasterizer(int width, int height)
         {
             Width = width;
@@ -135,6 +135,83 @@ namespace PaintStudio.Utils
         }
 
         /// <summary>
+        /// Algoritmo de relleno de polígonos por barrido de líneas (Scanline Fill).
+        /// Es el método estándar y más eficiente para rellenar figuras cerradas definidas
+        /// por una lista de vértices (regla par-impar / even-odd rule).
+        /// Complejidad O(alto * aristas), muy superior a un FloodFill por píxel para este caso.
+        /// </summary>
+        public void FillPolygon(System.Collections.Generic.List<PaintStudio.Models.PointD> vertices, Color c)
+        {
+            if (vertices.Count < 3) return;
+            int n = vertices.Count;
+
+            int minY = int.MaxValue, maxY = int.MinValue;
+            foreach (var v in vertices)
+            {
+                int vy = (int)Math.Round(v.Y);
+                if (vy < minY) minY = vy;
+                if (vy > maxY) maxY = vy;
+            }
+            minY = Math.Max(minY, 0);
+            maxY = Math.Min(maxY, Height - 1);
+
+            List<double> xIntersections = new List<double>();
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                xIntersections.Clear();
+
+                for (int i = 0; i < n; i++)
+                {
+                    var v1 = vertices[i];
+                    var v2 = vertices[(i + 1) % n];
+                    double y1 = v1.Y, y2 = v2.Y;
+
+                    if (y1 == y2) continue; // Arista horizontal, se ignora
+
+                    // ¿La línea de barrido "y" cruza esta arista?
+                    if (y >= Math.Min(y1, y2) && y < Math.Max(y1, y2))
+                    {
+                        double t = (y - y1) / (y2 - y1);
+                        double x = v1.X + t * (v2.X - v1.X);
+                        xIntersections.Add(x);
+                    }
+                }
+
+                xIntersections.Sort();
+
+                // Se pintan los tramos entre pares consecutivos de intersecciones
+                for (int i = 0; i + 1 < xIntersections.Count; i += 2)
+                {
+                    int xStart = (int)Math.Round(xIntersections[i]);
+                    int xEnd = (int)Math.Round(xIntersections[i + 1]);
+                    for (int x = xStart; x <= xEnd; x++)
+                    {
+                        SetPixel(x, y, c);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Relleno de círculo recorriendo filas horizontales dentro del radio (muy eficiente,
+        /// evita el costo de generar el polígono aproximado del círculo).
+        /// </summary>
+        public void FillCircle(int xc, int yc, int r, Color c)
+        {
+            if (r <= 0) return;
+            int rSquared = r * r;
+            for (int y = -r; y <= r; y++)
+            {
+                int dx = (int)Math.Sqrt(rSquared - y * y);
+                for (int x = -dx; x <= dx; x++)
+                {
+                    SetPixel(xc + x, yc + y, c);
+                }
+            }
+        }
+
+        /// <summary>
         /// Algoritmo de relleno FloodFill usando una pila (iterativo) para evitar StackOverflow
         /// </summary>
         public void FloodFill(int x, int y, Color replacementColor)
@@ -150,12 +227,12 @@ namespace PaintStudio.Utils
             // Optimización con LockBits para FloodFill
             BitmapData data = Canvas.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             int stride = data.Stride;
-            
+
             unsafe
             {
                 byte* ptr = (byte*)data.Scan0;
                 int bytesPerPixel = 4;
-                
+
                 int targetArgb = targetColor.ToArgb();
                 int repArgb = replacementColor.ToArgb();
 

@@ -22,6 +22,12 @@ namespace PaintStudio.Models
             Color c = Selected ? Color.Red : LineColor;
 
             double r = Math.Sqrt(Math.Pow(v2.X - v1.X, 2) + Math.Pow(v2.Y - v1.Y, 2));
+
+            if (IsFilled)
+            {
+                rasterizer.FillCircle((int)Math.Round(v1.X), (int)Math.Round(v1.Y), (int)Math.Round(r), FillColor);
+            }
+
             rasterizer.DrawCircle((int)Math.Round(v1.X), (int)Math.Round(v1.Y), (int)Math.Round(r), c, Thickness);
         }
 
@@ -35,4 +41,3 @@ namespace PaintStudio.Models
         }
     }
 }
-

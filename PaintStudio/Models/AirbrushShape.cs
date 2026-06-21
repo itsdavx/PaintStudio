@@ -30,7 +30,7 @@ namespace PaintStudio.Models
                     // Distribución aleatoria circular
                     double angle = rnd.NextDouble() * Math.PI * 2;
                     double r = rnd.NextDouble() * radius;
-                    
+
                     int px = cx + (int)(Math.Cos(angle) * r);
                     int py = cy + (int)(Math.Sin(angle) * r);
 
@@ -50,4 +50,3 @@ namespace PaintStudio.Models
         }
     }
 }
-

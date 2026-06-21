@@ -26,7 +26,7 @@ namespace PaintStudio.Utils
             // [ 1  0  cx ] [ cos -sin 0 ] [ 1  0 -cx ]
             // [ 0  1  cy ] [ sin  cos 0 ] [ 0  1 -cy ]
             // [ 0  0  1  ] [  0    0  1 ] [ 0  0  1  ]
-            
+
             return new double[,] {
                 { cos, -sin, -cx * cos + cy * sin + cx },
                 { sin,  cos, -cx * sin - cy * cos + cy },

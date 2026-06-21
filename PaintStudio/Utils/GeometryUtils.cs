@@ -37,7 +37,7 @@ namespace PaintStudio.Utils
         {
             for (int i = 0; i < path.Count - 1; i++)
             {
-                if (DistanceToSegment(p, path[i], path[i+1]) <= tolerance) return true;
+                if (DistanceToSegment(p, path[i], path[i + 1]) <= tolerance) return true;
             }
             return false;
         }

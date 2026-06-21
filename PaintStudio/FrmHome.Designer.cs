@@ -23,6 +23,8 @@ namespace PaintStudio
             this.exportarImagenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.salirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.btnUndo = new System.Windows.Forms.ToolStripButton();
+            this.btnRedo = new System.Windows.Forms.ToolStripButton();
             this.btnSelect = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnFreehand = new System.Windows.Forms.ToolStripButton();
@@ -45,9 +47,15 @@ namespace PaintStudio
             this.lblTransform = new System.Windows.Forms.Label();
             this.pnlCenter = new System.Windows.Forms.Panel();
             this.canvasPicBox = new System.Windows.Forms.PictureBox();
+            this.btnDeleteLayer = new System.Windows.Forms.ToolStripButton();
+            this.numCanvasWidth = new System.Windows.Forms.NumericUpDown();
+            this.numCanvasHeight = new System.Windows.Forms.NumericUpDown();
+            this.numZoom = new System.Windows.Forms.NumericUpDown();
+            this.btnResizeCanvas = new System.Windows.Forms.ToolStripButton();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.pnlRight.SuspendLayout();
@@ -109,8 +117,11 @@ namespace PaintStudio
             // 
             // toolStrip1
             // 
-            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnUndo,
+            this.btnRedo,
+            new System.Windows.Forms.ToolStripSeparator(),
             this.btnSelect,
             this.toolStripSeparator1,
             this.btnFreehand,
@@ -126,11 +137,70 @@ namespace PaintStudio
             this.btnPoly,
             this.btnTri,
             this.btnStar});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 24);
+            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.toolStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.VerticalStackWithOverflow;
+            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1199, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(88, 693);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
+            // numeric controls used by runtime (canvas size / zoom)
+            this.numCanvasWidth.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
+            this.numCanvasWidth.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            this.numCanvasWidth.Value = new decimal(new int[] { 800, 0, 0, 0 });
+            this.numCanvasWidth.Width = 60;
+            this.numCanvasHeight.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
+            this.numCanvasHeight.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            this.numCanvasHeight.Value = new decimal(new int[] { 600, 0, 0, 0 });
+            this.numCanvasHeight.Width = 60;
+            this.numZoom.Minimum = new decimal(new int[] { 10, 0, 0, 0 });
+            this.numZoom.Maximum = new decimal(new int[] { 500, 0, 0, 0 });
+            this.numZoom.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            this.numZoom.Width = 60;
+
+            // Add size/zoom controls to the toolstrip as hosts (labels + inputs)
+            var hostWLabel = new System.Windows.Forms.ToolStripLabel("W:");
+            var hostHLabel = new System.Windows.Forms.ToolStripLabel("H:");
+            var hostZoomLabel = new System.Windows.Forms.ToolStripLabel("Zoom:");
+            var hostW = new System.Windows.Forms.ToolStripControlHost(this.numCanvasWidth);
+            var hostH = new System.Windows.Forms.ToolStripControlHost(this.numCanvasHeight);
+            var hostZ = new System.Windows.Forms.ToolStripControlHost(this.numZoom);
+            this.btnResizeCanvas.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnResizeCanvas.Name = "btnResizeCanvas";
+            this.btnResizeCanvas.Size = new System.Drawing.Size(60, 22);
+            this.btnResizeCanvas.Text = "Aplicar tamaño";
+            this.btnDeleteLayer.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnDeleteLayer.Name = "btnDeleteLayer";
+            this.btnDeleteLayer.Size = new System.Drawing.Size(48, 22);
+            this.btnDeleteLayer.Text = "Borrar Capa";
+
+            this.toolStrip1.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+            this.toolStrip1.Items.Add(hostWLabel);
+            this.toolStrip1.Items.Add(hostW);
+            this.toolStrip1.Items.Add(hostHLabel);
+            this.toolStrip1.Items.Add(hostH);
+            this.toolStrip1.Items.Add(this.btnResizeCanvas);
+            this.toolStrip1.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+            this.toolStrip1.Items.Add(hostZoomLabel);
+            this.toolStrip1.Items.Add(hostZ);
+            this.toolStrip1.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+            this.toolStrip1.Items.Add(this.btnDeleteLayer);
+            // 
+            // btnUndo
+            // 
+            this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnUndo.Name = "btnUndo";
+            this.btnUndo.Size = new System.Drawing.Size(46, 22);
+            this.btnUndo.Text = "↺ Deshacer";
+            this.btnUndo.ToolTipText = "Deshacer (Ctrl+Z)";
+            // 
+            // btnRedo
+            // 
+            this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnRedo.Name = "btnRedo";
+            this.btnRedo.Size = new System.Drawing.Size(46, 22);
+            this.btnRedo.Text = "↻ Rehacer";
+            this.btnRedo.ToolTipText = "Rehacer (Ctrl+Y)";
             // 
             // btnSelect
             // 
@@ -242,7 +312,7 @@ namespace PaintStudio
             this.pnlRight.Dock = System.Windows.Forms.DockStyle.Right;
             this.pnlRight.Location = new System.Drawing.Point(949, 49);
             this.pnlRight.Name = "pnlRight";
-            this.pnlRight.Size = new System.Drawing.Size(250, 704);
+            this.pnlRight.Size = new System.Drawing.Size(250, 693);
             this.pnlRight.TabIndex = 2;
             // 
             // lstLayers
@@ -252,7 +322,7 @@ namespace PaintStudio
             this.lstLayers.ItemHeight = 15;
             this.lstLayers.Location = new System.Drawing.Point(0, 25);
             this.lstLayers.Name = "lstLayers";
-            this.lstLayers.Size = new System.Drawing.Size(250, 479);
+            this.lstLayers.Size = new System.Drawing.Size(250, 476);
             this.lstLayers.TabIndex = 1;
             // 
             // lblLayersTitle
@@ -269,9 +339,9 @@ namespace PaintStudio
             // pnlTransforms
             // 
             this.pnlTransforms.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlTransforms.Location = new System.Drawing.Point(0, 504);
+            this.pnlTransforms.Location = new System.Drawing.Point(0, 501);
             this.pnlTransforms.Name = "pnlTransforms";
-            this.pnlTransforms.Size = new System.Drawing.Size(250, 200);
+            this.pnlTransforms.Size = new System.Drawing.Size(250, 192);
             this.pnlTransforms.TabIndex = 2;
             // 
             // lblTransform
@@ -289,31 +359,33 @@ namespace PaintStudio
             this.pnlCenter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlCenter.Location = new System.Drawing.Point(0, 49);
             this.pnlCenter.Name = "pnlCenter";
-            this.pnlCenter.Size = new System.Drawing.Size(949, 704);
+            this.pnlCenter.Size = new System.Drawing.Size(949, 693);
             this.pnlCenter.TabIndex = 3;
             // 
             // canvasPicBox
             // 
             this.canvasPicBox.BackColor = System.Drawing.Color.White;
+            this.canvasPicBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.canvasPicBox.Location = new System.Drawing.Point(20, 20);
             this.canvasPicBox.Name = "canvasPicBox";
             this.canvasPicBox.Size = new System.Drawing.Size(800, 600);
             this.canvasPicBox.TabIndex = 0;
             this.canvasPicBox.TabStop = false;
             // 
-            // Form1
+            // FrmHome
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1199, 753);
+            this.ClientSize = new System.Drawing.Size(1199, 742);
             this.Controls.Add(this.pnlCenter);
             this.Controls.Add(this.pnlRight);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip1);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.MainMenuStrip = this.menuStrip1;
-            this.Name = "Form1";
-            this.Text = "Paint Pro - Estilo Clásico";
+            this.Name = "FrmHome";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Paint 2026 - PaintStudio";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -333,8 +405,15 @@ namespace PaintStudio
         private System.Windows.Forms.ToolStripMenuItem cargarProyectoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportarImagenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem salirToolStripMenuItem;
-        
+
         private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStripButton btnUndo;
+        private System.Windows.Forms.ToolStripButton btnRedo;
+        private System.Windows.Forms.ToolStripButton btnDeleteLayer;
+        private System.Windows.Forms.ToolStripButton btnResizeCanvas;
+        private System.Windows.Forms.NumericUpDown numCanvasWidth;
+        private System.Windows.Forms.NumericUpDown numCanvasHeight;
+        private System.Windows.Forms.NumericUpDown numZoom;
         private System.Windows.Forms.ToolStripButton btnSelect;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton btnFreehand;
@@ -363,5 +442,6 @@ namespace PaintStudio
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }

@@ -29,7 +29,7 @@ namespace PaintStudio.Models
 
             if (Vertices.Count == 2)
             {
-                rasterizer.DrawLine((int)Math.Round(Vertices[0].X), (int)Math.Round(Vertices[0].Y), 
+                rasterizer.DrawLine((int)Math.Round(Vertices[0].X), (int)Math.Round(Vertices[0].Y),
                                     (int)Math.Round(Vertices[1].X), (int)Math.Round(Vertices[1].Y), c, Thickness);
                 return;
             }
@@ -41,7 +41,7 @@ namespace PaintStudio.Models
             for (double t = step; t <= 1.0; t += step)
             {
                 PointD p = CalculateBezierPoint(t);
-                rasterizer.DrawLine((int)Math.Round(prevPoint.X), (int)Math.Round(prevPoint.Y), 
+                rasterizer.DrawLine((int)Math.Round(prevPoint.X), (int)Math.Round(prevPoint.Y),
                                     (int)Math.Round(p.X), (int)Math.Round(p.Y), c, Thickness);
                 prevPoint = p;
             }
@@ -87,4 +87,3 @@ namespace PaintStudio.Models
         }
     }
 }
-

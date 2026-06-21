@@ -20,12 +20,17 @@ namespace PaintStudio.Models
         {
             if (Vertices.Count < 4) return;
             Color c = Selected ? Color.Red : LineColor;
-            
+
+            if (IsFilled)
+            {
+                rasterizer.FillPolygon(Vertices, FillColor);
+            }
+
             for (int i = 0; i < 4; i++)
             {
                 var v1 = Vertices[i];
                 var v2 = Vertices[(i + 1) % 4];
-                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y), 
+                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y),
                                     (int)Math.Round(v2.X), (int)Math.Round(v2.Y), c, Thickness);
             }
         }
@@ -34,14 +39,13 @@ namespace PaintStudio.Models
         {
             if (Vertices.Count < 4) return false;
             if (IsFilled && GeometryUtils.PolygonContains(Vertices, p)) return true;
-            
+
             // Check boundaries
             for (int i = 0; i < 4; i++)
             {
-                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i+1)%4]) <= Math.Max(Thickness, 5)) return true;
+                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i + 1) % 4]) <= Math.Max(Thickness, 5)) return true;
             }
             return false;
         }
     }
 }
-

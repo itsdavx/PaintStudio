@@ -17,7 +17,7 @@ namespace PaintStudio.Models
         public Color FillColor { get; set; }
         public int Thickness { get; set; }
         public bool IsFilled { get; set; }
-        
+
         public bool Selected { get; set; }
 
         public Shape()
@@ -28,6 +28,20 @@ namespace PaintStudio.Models
             Thickness = 1;
             IsFilled = false;
             Selected = false;
+        }
+
+        /// <summary>
+        /// Crea una copia profunda (clone) de la figura.
+        /// Implementado de forma genérica usando MemberwiseClone para preservar
+        /// el tipo runtime y clonando la lista de vértices.
+        /// </summary>
+        public virtual Shape Clone()
+        {
+            var copy = (Shape)this.MemberwiseClone();
+            var newVerts = new List<PointD>(this.Vertices.Count);
+            foreach (var v in this.Vertices) newVerts.Add(new PointD(v.X, v.Y));
+            copy.Vertices = newVerts;
+            return copy;
         }
 
         /// <summary>
@@ -67,5 +81,3 @@ namespace PaintStudio.Models
         }
     }
 }
-
-

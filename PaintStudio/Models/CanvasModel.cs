@@ -18,6 +18,21 @@ namespace PaintStudio.Models
             Shapes.Add(shape);
         }
 
+        public void SetShapes(List<Shape> shapes)
+        {
+            Shapes = shapes ?? new List<Shape>();
+        }
+
+        public void RemoveShapesAt(IEnumerable<int> indices)
+        {
+            var sorted = new List<int>(indices);
+            sorted.Sort();
+            for (int i = sorted.Count - 1; i >= 0; i--)
+            {
+                RemoveShapeAt(sorted[i]);
+            }
+        }
+
         public void RemoveShape(Shape shape)
         {
             Shapes.Remove(shape);
@@ -55,4 +70,3 @@ namespace PaintStudio.Models
         }
     }
 }
-
