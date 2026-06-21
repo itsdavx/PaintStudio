@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using PaintStudio.Controllers;
 using PaintStudio.Models;
+using System.Runtime.InteropServices;
+
 namespace PaintStudio
 {
     public partial class FrmHome : Form
@@ -23,7 +25,19 @@ namespace PaintStudio
         private Point resizeStartMouse;
         private Size resizeStartCanvasSize;
         private Size previewCanvasSize;
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+        private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 
+        private void ApplyDarkTitleBar()
+        {
+            try
+            {
+                int useDark = 1;
+                DwmSetWindowAttribute(this.Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref useDark, sizeof(int));
+            }
+            catch { /* No-op en Windows < 10 1809 (sin soporte DWM dark mode) */ }
+        }
         public FrmHome()
         {
             InitializeComponent();
@@ -31,6 +45,7 @@ namespace PaintStudio
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            ApplyDarkTitleBar();
             controller = new PaintController(canvasPicBox);
             controller.OnLayersChanged = UpdateLayersList;
             controller.OnUndoRedoStateChanged = (canUndo, canRedo) => {
@@ -94,49 +109,139 @@ namespace PaintStudio
             BuildTransformsPanel();
             BuildColorAndThickness();
             AssignToolEvents();
+            ApplyToolbarIconStyle();
             AssignMenuEvents();
             AssignUndoRedoEvents();
             AssignCanvasResizeEvents();
             AssignZoomEvents();
             AssignDeleteLayersButton();
             AssignCanvasAreaEvents();
+            SetupNumericStyling();
 
             btnUndo.Enabled = false;
             btnRedo.Enabled = false;
 
             // Posiciona el lienzo centrado por primera vez
             CenterCanvas();
+
+            ApplyRoundedPanels();
+            SetupCollapsibleSidebar();
+            SetupFloatingShells();
         }
+
+        private const int CardRadius = 16;
+
+        private void ApplyRoundedPanels()
+        {
+            void RoundCorners(Control p, int radius)
+            {
+                p.Paint += (s, e) => {
+                    var path = RoundedRectPath(p.ClientRectangle, radius);
+                    e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    using (var pen = new Pen(ColorTranslator.FromHtml("#2D2D2D"), 1.5f))
+                        e.Graphics.DrawPath(pen, path);
+                    p.Region = new Region(path);
+                };
+            }
+            RoundCorners(pnlRight, CardRadius);
+            RoundCorners(pnlTransforms, CardRadius);
+            RoundCorners(toolStrip1, CardRadius);
+        }
+
+        private System.Drawing.Drawing2D.GraphicsPath RoundedRectPath(Rectangle r, int radius)
+        {
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            path.AddArc(r.X, r.Y, radius, radius, 180, 90);
+            path.AddArc(r.Right - radius, r.Y, radius, radius, 270, 90);
+            path.AddArc(r.Right - radius, r.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(r.X, r.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private System.Windows.Forms.Timer sidebarTimer;
+        private const int SidebarExpanded = 250;
+        private const int SidebarCollapsed = 36;
+
+        private void SetupCollapsibleSidebar()
+        {
+            pnlRight.Width = SidebarCollapsed;
+            int target = SidebarCollapsed;
+            sidebarTimer = new System.Windows.Forms.Timer { Interval = 8 };
+            sidebarTimer.Tick += (s, e) => {
+                int step = 18;
+                if (pnlRight.Width < target) pnlRight.Width = Math.Min(target, pnlRight.Width + step);
+                else if (pnlRight.Width > target) pnlRight.Width = Math.Max(target, pnlRight.Width - step);
+                else sidebarTimer.Stop();
+                CenterCanvas();
+            };
+            pnlRight.MouseEnter += (s, e) => { target = SidebarExpanded; sidebarTimer.Start(); };
+            pnlRight.MouseLeave += (s, e) => { target = SidebarCollapsed; sidebarTimer.Start(); };
+        }
+        private void SetupFloatingShells()
+        {
+            void AttachShadow(Panel shell, Control card)
+            {
+                shell.Paint += (s, e) => {
+                    e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    var cardRect = card.Bounds;
+                    var layers = new (int offset, int alpha)[] { (5, 12), (3, 22), (2, 35) };
+                    foreach (var (offset, alpha) in layers)
+                    {
+                        var shadowRect = new Rectangle(cardRect.X + offset, cardRect.Y + offset, cardRect.Width, cardRect.Height);
+                        using (var path = RoundedRectPath(shadowRect, CardRadius))
+                        using (var brush = new SolidBrush(Color.FromArgb(alpha, 0, 0, 0)))
+                            e.Graphics.FillPath(brush, path);
+                    }
+                };
+            }
+            AttachShadow(pnlLeftShell, toolStrip1);
+            AttachShadow(pnlRightShell, pnlRight);
+        }
+
         private void BuildTransformsPanel()
         {
             pnlTransforms.Controls.Clear();
-            Label title = new Label() { Text = "Transformaciones", Font = new Font("Segoe UI", 9F, FontStyle.Bold), Dock = DockStyle.Top, TextAlign = ContentAlignment.MiddleCenter };
+            Color labelColor = Color.White;
+            Color fieldBg = ColorTranslator.FromHtml("#2D2D2D");
+            Color accent = ColorTranslator.FromHtml("#4FC3F7");
+
+            Label title = new Label() { Text = "Transformaciones", Font = new Font("Segoe UI", 9F, FontStyle.Bold), Dock = DockStyle.Top, TextAlign = ContentAlignment.MiddleCenter, ForeColor = accent, BackColor = Color.Transparent, Height = 26 };
             pnlTransforms.Controls.Add(title);
-            int y = 30;
-            pnlTransforms.Controls.Add(new Label() { Text = "Rotación (°):", Location = new Point(10, y), AutoSize = true });
-            numRot = new NumericUpDown() { Location = new Point(120, y), Width = 100, Minimum = -360, Maximum = 360, Value = 0 };
+
+            NumericUpDown StyledNumeric(int px, int py) => new NumericUpDown() { Location = new Point(px, py), Width = 100, BackColor = fieldBg, ForeColor = labelColor, BorderStyle = BorderStyle.FixedSingle };
+            Label StyledLabel(string text, int px, int py) => new Label() { Text = text, Location = new Point(px, py), AutoSize = true, ForeColor = labelColor, BackColor = Color.Transparent };
+
+            int yPos = 34;
+            pnlTransforms.Controls.Add(StyledLabel("Rotación (°):", 10, yPos));
+            numRot = StyledNumeric(120, yPos); numRot.Minimum = -360; numRot.Maximum = 360; numRot.Value = 0;
             pnlTransforms.Controls.Add(numRot);
-            y += 30;
-            pnlTransforms.Controls.Add(new Label() { Text = "Escala (%):", Location = new Point(10, y), AutoSize = true });
-            numScale = new NumericUpDown() { Location = new Point(120, y), Width = 100, Minimum = 10, Maximum = 500, Value = 100 };
+            yPos += 30;
+            pnlTransforms.Controls.Add(StyledLabel("Escala (%):", 10, yPos));
+            numScale = StyledNumeric(120, yPos); numScale.Minimum = 10; numScale.Maximum = 500; numScale.Value = 100;
             pnlTransforms.Controls.Add(numScale);
-            y += 30;
-            pnlTransforms.Controls.Add(new Label() { Text = "Traslación X:", Location = new Point(10, y), AutoSize = true });
-            numTransX = new NumericUpDown() { Location = new Point(120, y), Width = 100, Minimum = -1000, Maximum = 1000, Value = 0 };
+            yPos += 30;
+            pnlTransforms.Controls.Add(StyledLabel("Traslación X:", 10, yPos));
+            numTransX = StyledNumeric(120, yPos); numTransX.Minimum = -1000; numTransX.Maximum = 1000; numTransX.Value = 0;
             pnlTransforms.Controls.Add(numTransX);
-            y += 30;
-            pnlTransforms.Controls.Add(new Label() { Text = "Traslación Y:", Location = new Point(10, y), AutoSize = true });
-            numTransY = new NumericUpDown() { Location = new Point(120, y), Width = 100, Minimum = -1000, Maximum = 1000, Value = 0 };
+            yPos += 30;
+            pnlTransforms.Controls.Add(StyledLabel("Traslación Y:", 10, yPos));
+            numTransY = StyledNumeric(120, yPos); numTransY.Minimum = -1000; numTransY.Maximum = 1000; numTransY.Value = 0;
             pnlTransforms.Controls.Add(numTransY);
-            y += 30;
-            Button btnApply = new Button() { Text = "Aplicar", Location = new Point(10, y), Width = 210, Height = 30 };
+            yPos += 34;
+            Button btnApply = new Button() { Text = "Aplicar", Location = new Point(10, yPos), Width = 210, Height = 32, BackColor = accent, ForeColor = Color.Black, FlatStyle = FlatStyle.Flat };
+            btnApply.FlatAppearance.BorderSize = 0;
             btnApply.Click += BtnApplyTransform_Click;
             pnlTransforms.Controls.Add(btnApply);
         }
         private void BuildColorAndThickness()
         {
-            ToolStripControlHost hostColorLabel = new ToolStripControlHost(new Label() { Text = " Línea:", AutoSize = true });
+            Color accent = ColorTranslator.FromHtml("#4FC3F7");
+
+            ToolStripControlHost hostColorLabel = new ToolStripControlHost(new Label() { Text = " Línea:", AutoSize = true, ForeColor = Color.White });
             btnColor = new Button() { BackColor = Color.Black, Size = new Size(20, 20), FlatStyle = FlatStyle.Flat };
+            btnColor.FlatAppearance.BorderColor = accent;
+            btnColor.FlatAppearance.BorderSize = 1;
             btnColor.Click += (s, e) => {
                 if (colorDialog1.ShowDialog() == DialogResult.OK)
                 {
@@ -146,8 +251,10 @@ namespace PaintStudio
             };
             ToolStripControlHost hostColorBtn = new ToolStripControlHost(btnColor);
 
-            ToolStripControlHost hostFillLabel = new ToolStripControlHost(new Label() { Text = " Relleno:", AutoSize = true });
+            ToolStripControlHost hostFillLabel = new ToolStripControlHost(new Label() { Text = " Relleno:", AutoSize = true, ForeColor = Color.White });
             btnFillColorBtn = new Button() { BackColor = Color.White, Size = new Size(20, 20), FlatStyle = FlatStyle.Flat };
+            btnFillColorBtn.FlatAppearance.BorderColor = accent;
+            btnFillColorBtn.FlatAppearance.BorderSize = 1;
             btnFillColorBtn.Click += (s, e) => {
                 if (colorDialog1.ShowDialog() == DialogResult.OK)
                 {
@@ -157,11 +264,11 @@ namespace PaintStudio
             };
             ToolStripControlHost hostFillBtn = new ToolStripControlHost(btnFillColorBtn);
 
-            chkFillEnabled = new CheckBox() { Text = "Activar relleno", AutoSize = true };
+            chkFillEnabled = new CheckBox() { Text = "Activar relleno", AutoSize = true, ForeColor = Color.White };
             chkFillEnabled.CheckedChanged += (s, e) => { controller.FillEnabled = chkFillEnabled.Checked; };
             ToolStripControlHost hostFillChk = new ToolStripControlHost(chkFillEnabled);
 
-            ToolStripControlHost hostThickLabel = new ToolStripControlHost(new Label() { Text = " Grosor:", AutoSize = true });
+            ToolStripControlHost hostThickLabel = new ToolStripControlHost(new Label() { Text = " Grosor:", AutoSize = true, ForeColor = Color.White });
             numThickness = new NumericUpDown() { Minimum = 1, Maximum = 30, Value = 2, Width = 50 };
             numThickness.ValueChanged += (s, e) => { controller.CurrentThickness = (int)numThickness.Value; };
             ToolStripControlHost hostThickNum = new ToolStripControlHost(numThickness);
@@ -175,21 +282,52 @@ namespace PaintStudio
             toolStrip1.Items.Add(hostThickLabel);
             toolStrip1.Items.Add(hostThickNum);
         }
+        private void SetupNumericStyling()
+        {
+            Color fieldBg = ColorTranslator.FromHtml("#2D2D2D");
+            foreach (var n in new[] { numCanvasWidth, numCanvasHeight, numZoom, numThickness })
+            {
+                n.BackColor = fieldBg;
+                n.ForeColor = Color.White;
+                n.BorderStyle = BorderStyle.FixedSingle;
+            }
+        }
+
+        private void ApplyToolbarIconStyle()
+        {
+            foreach (ToolStripItem item in toolStrip1.Items)
+            {
+                if (item is ToolStripButton btn)
+                {
+                    btn.Size = new Size(120, 32);
+                    btn.TextAlign = ContentAlignment.MiddleCenter;
+                    btn.Margin = new Padding(6, 2, 6, 2);
+                }
+            }
+        }
+
+        private ToolStripButton activeToolBtn;
         private void AssignToolEvents()
         {
-            btnSelect.Click += (s, e) => controller.CurrentTool = ToolMode.Select;
-            btnFreehand.Click += (s, e) => controller.CurrentTool = ToolMode.Freehand;
-            btnBezier.Click += (s, e) => controller.CurrentTool = ToolMode.Bezier;
-            btnLine.Click += (s, e) => controller.CurrentTool = ToolMode.Line;
-            btnCircle.Click += (s, e) => controller.CurrentTool = ToolMode.Circle;
-            btnRect.Click += (s, e) => controller.CurrentTool = ToolMode.Rectangle;
-            btnPoly.Click += (s, e) => controller.CurrentTool = ToolMode.Polygon;
-            btnTri.Click += (s, e) => controller.CurrentTool = ToolMode.Triangle;
-            btnStar.Click += (s, e) => controller.CurrentTool = ToolMode.Star;
-            btnErase.Click += (s, e) => controller.CurrentTool = ToolMode.Erase;
-            btnFill.Click += (s, e) => controller.CurrentTool = ToolMode.Fill;
-            btnPicker.Click += (s, e) => controller.CurrentTool = ToolMode.Picker;
-            btnText.Click += (s, e) => controller.CurrentTool = ToolMode.Text;
+            void Highlight(ToolStripButton b)
+            {
+                if (activeToolBtn != null) activeToolBtn.BackColor = Color.Transparent;
+                b.BackColor = ColorTranslator.FromHtml("#2D2D2D");
+                activeToolBtn = b;
+            }
+            btnSelect.Click += (s, e) => { controller.CurrentTool = ToolMode.Select; Highlight(btnSelect); };
+            btnFreehand.Click += (s, e) => { controller.CurrentTool = ToolMode.Freehand; Highlight(btnFreehand); };
+            btnBezier.Click += (s, e) => { controller.CurrentTool = ToolMode.Bezier; Highlight(btnBezier); };
+            btnLine.Click += (s, e) => { controller.CurrentTool = ToolMode.Line; Highlight(btnLine); };
+            btnCircle.Click += (s, e) => { controller.CurrentTool = ToolMode.Circle; Highlight(btnCircle); };
+            btnRect.Click += (s, e) => { controller.CurrentTool = ToolMode.Rectangle; Highlight(btnRect); };
+            btnPoly.Click += (s, e) => { controller.CurrentTool = ToolMode.Polygon; Highlight(btnPoly); };
+            btnTri.Click += (s, e) => { controller.CurrentTool = ToolMode.Triangle; Highlight(btnTri); };
+            btnStar.Click += (s, e) => { controller.CurrentTool = ToolMode.Star; Highlight(btnStar); };
+            btnErase.Click += (s, e) => { controller.CurrentTool = ToolMode.Erase; Highlight(btnErase); };
+            btnFill.Click += (s, e) => { controller.CurrentTool = ToolMode.Fill; Highlight(btnFill); };
+            btnPicker.Click += (s, e) => { controller.CurrentTool = ToolMode.Picker; Highlight(btnPicker); };
+            btnText.Click += (s, e) => { controller.CurrentTool = ToolMode.Text; Highlight(btnText); };
         }
         private void AssignMenuEvents()
         {
@@ -341,6 +479,14 @@ namespace PaintStudio
 
         private void PnlCenter_Paint(object sender, PaintEventArgs e)
         {
+            // Resalte del lienzo: sombra + borde sutil contra el fondo oscuro
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            var canvasRect = canvasPicBox.Bounds;
+            using (var shadowPen = new Pen(Color.FromArgb(60, 0, 0, 0), 6))
+                e.Graphics.DrawRectangle(shadowPen, Rectangle.Inflate(canvasRect, 3, 3));
+            using (var borderPen = new Pen(ColorTranslator.FromHtml("#2D2D2D"), 1))
+                e.Graphics.DrawRectangle(borderPen, Rectangle.Inflate(canvasRect, 1, 1));
+
             var handles = GetHandleRects();
             using (var fillBrush = new SolidBrush(Color.White))
             using (var pen = new Pen(Color.DimGray))
@@ -459,5 +605,36 @@ namespace PaintStudio
                 return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
             }
         }
+        internal class DarkToolStripColorTable : System.Windows.Forms.ProfessionalColorTable
+        {
+            private static readonly Color Bg = ColorTranslator.FromHtml("#1E1E1E");
+            private static readonly Color Border = ColorTranslator.FromHtml("#2D2D2D");
+            private static readonly Color Accent = ColorTranslator.FromHtml("#4FC3F7");
+            public override Color ToolStripGradientBegin => Bg;
+            public override Color ToolStripGradientMiddle => Bg;
+            public override Color ToolStripGradientEnd => Bg;
+            public override Color MenuStripGradientBegin => Bg;
+            public override Color MenuStripGradientEnd => Bg;
+            public override Color ImageMarginGradientBegin => Bg;
+            public override Color ImageMarginGradientMiddle => Bg;
+            public override Color ImageMarginGradientEnd => Bg;
+            public override Color ButtonSelectedHighlight => Accent;
+            public override Color ButtonSelectedBorder => Accent;
+            public override Color MenuItemSelected => Accent;
+            public override Color MenuBorder => Border;
+            public override Color SeparatorDark => Border;
+            public override Color SeparatorLight => Border;
+        }
+
+        internal class DarkToolStripRenderer : System.Windows.Forms.ToolStripProfessionalRenderer
+        {
+            public DarkToolStripRenderer() : base(new DarkToolStripColorTable()) { }
+            protected override void OnRenderItemText(System.Windows.Forms.ToolStripItemTextRenderEventArgs e)
+            {
+                e.TextColor = Color.White;
+                base.OnRenderItemText(e);
+            }
+        }
+
     }
 }
