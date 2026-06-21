@@ -1,0 +1,47 @@
+using System;
+using System.Drawing;
+using PaintStudio.Utils;
+
+namespace PaintStudio.Models
+{
+    [System.Serializable]
+    public class RectShape : Shape
+    {
+        public RectShape(PointD p1, PointD p2)
+        {
+            // Almacenamos los 4 vértices para permitir rotación matemática posterior
+            Vertices.Add(new PointD(p1.X, p1.Y));
+            Vertices.Add(new PointD(p2.X, p1.Y));
+            Vertices.Add(new PointD(p2.X, p2.Y));
+            Vertices.Add(new PointD(p1.X, p2.Y));
+        }
+
+        public override void Draw(Rasterizer rasterizer)
+        {
+            if (Vertices.Count < 4) return;
+            Color c = Selected ? Color.Red : LineColor;
+            
+            for (int i = 0; i < 4; i++)
+            {
+                var v1 = Vertices[i];
+                var v2 = Vertices[(i + 1) % 4];
+                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y), 
+                                    (int)Math.Round(v2.X), (int)Math.Round(v2.Y), c, Thickness);
+            }
+        }
+
+        public override bool ContainsPoint(PointD p)
+        {
+            if (Vertices.Count < 4) return false;
+            if (IsFilled && GeometryUtils.PolygonContains(Vertices, p)) return true;
+            
+            // Check boundaries
+            for (int i = 0; i < 4; i++)
+            {
+                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i+1)%4]) <= Math.Max(Thickness, 5)) return true;
+            }
+            return false;
+        }
+    }
+}
+
