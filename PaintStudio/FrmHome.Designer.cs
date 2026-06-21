@@ -1,3 +1,5 @@
+using Guna.UI2.WinForms;
+
 namespace PaintStudio
 {
     partial class FrmHome
@@ -22,56 +24,42 @@ namespace PaintStudio
             this.cargarProyectoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportarImagenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.salirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.btnUndo = new System.Windows.Forms.ToolStripButton();
-            this.btnRedo = new System.Windows.Forms.ToolStripButton();
-            this.btnSelect = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnFreehand = new System.Windows.Forms.ToolStripButton();
-            this.btnBezier = new System.Windows.Forms.ToolStripButton();
-            this.btnErase = new System.Windows.Forms.ToolStripButton();
-            this.btnFill = new System.Windows.Forms.ToolStripButton();
-            this.btnPicker = new System.Windows.Forms.ToolStripButton();
-            this.btnText = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnLine = new System.Windows.Forms.ToolStripButton();
-            this.btnRect = new System.Windows.Forms.ToolStripButton();
-            this.btnCircle = new System.Windows.Forms.ToolStripButton();
-            this.btnPoly = new System.Windows.Forms.ToolStripButton();
-            this.btnTri = new System.Windows.Forms.ToolStripButton();
-            this.btnStar = new System.Windows.Forms.ToolStripButton();
-            this.numCanvasWidth = new System.Windows.Forms.NumericUpDown();
-            this.numCanvasHeight = new System.Windows.Forms.NumericUpDown();
-            this.numZoom = new System.Windows.Forms.NumericUpDown();
-            this.btnResizeCanvas = new System.Windows.Forms.ToolStripButton();
-            this.btnDeleteLayer = new System.Windows.Forms.ToolStripButton();
             this.pnlLeftShell = new System.Windows.Forms.Panel();
+            this.pnlSidebarCard = new Guna.UI2.WinForms.Guna2Panel();
             this.pnlRightShell = new System.Windows.Forms.Panel();
             this.pnlTransformsSpacer = new System.Windows.Forms.Panel();
+            this.pnlCanvasSpacer = new System.Windows.Forms.Panel();
+            this.pnlPropSpacer = new System.Windows.Forms.Panel();
             this.pnlRight = new System.Windows.Forms.Panel();
+            this.pnlCanvasSizeCard = new Guna.UI2.WinForms.Guna2Panel();
+            this.pnlPropertiesCard = new Guna.UI2.WinForms.Guna2Panel();
             this.lstLayers = new System.Windows.Forms.ListBox();
             this.lblLayersTitle = new System.Windows.Forms.Label();
             this.pnlTransforms = new System.Windows.Forms.Panel();
             this.lblTransform = new System.Windows.Forms.Label();
             this.pnlCenter = new System.Windows.Forms.Panel();
             this.canvasPicBox = new System.Windows.Forms.PictureBox();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.lblStatusCoords = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblStatusZoom = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblStatusCanvas = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblStatusToolSpring = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblStatusTool = new System.Windows.Forms.ToolStripStatusLabel();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.menuStrip1.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numCanvasWidth)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numCanvasHeight)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numZoom)).BeginInit();
+            this.pnlLeftShell.SuspendLayout();
             this.pnlRight.SuspendLayout();
             this.pnlCenter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.canvasPicBox)).BeginInit();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
             // 
-            this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.menuStrip1.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.menuStrip1.ForeColor = System.Drawing.Color.White;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.archivoToolStripMenuItem});
@@ -83,7 +71,6 @@ namespace PaintStudio
             // 
             // archivoToolStripMenuItem
             // 
-            this.archivoToolStripMenuItem.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.archivoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.nuevoToolStripMenuItem,
             this.guardarProyectoToolStripMenuItem,
@@ -97,7 +84,7 @@ namespace PaintStudio
             // 
             // nuevoToolStripMenuItem
             // 
-            this.nuevoToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.nuevoToolStripMenuItem.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.nuevoToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.nuevoToolStripMenuItem.Name = "nuevoToolStripMenuItem";
             this.nuevoToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
@@ -105,7 +92,7 @@ namespace PaintStudio
             // 
             // guardarProyectoToolStripMenuItem
             // 
-            this.guardarProyectoToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.guardarProyectoToolStripMenuItem.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.guardarProyectoToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.guardarProyectoToolStripMenuItem.Name = "guardarProyectoToolStripMenuItem";
             this.guardarProyectoToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
@@ -113,7 +100,7 @@ namespace PaintStudio
             // 
             // cargarProyectoToolStripMenuItem
             // 
-            this.cargarProyectoToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.cargarProyectoToolStripMenuItem.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.cargarProyectoToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.cargarProyectoToolStripMenuItem.Name = "cargarProyectoToolStripMenuItem";
             this.cargarProyectoToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
@@ -121,7 +108,7 @@ namespace PaintStudio
             // 
             // exportarImagenToolStripMenuItem
             // 
-            this.exportarImagenToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.exportarImagenToolStripMenuItem.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.exportarImagenToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.exportarImagenToolStripMenuItem.Name = "exportarImagenToolStripMenuItem";
             this.exportarImagenToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
@@ -129,225 +116,109 @@ namespace PaintStudio
             // 
             // salirToolStripMenuItem
             // 
-            this.salirToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.salirToolStripMenuItem.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.salirToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.salirToolStripMenuItem.Name = "salirToolStripMenuItem";
             this.salirToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.salirToolStripMenuItem.Text = "Salir";
             // 
-            // toolStrip1
+            // pnlLeftShell
             // 
-            this.toolStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolStrip1.ForeColor = System.Drawing.Color.White;
-            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btnUndo,
-            this.btnRedo,
-            this.btnSelect,
-            this.toolStripSeparator1,
-            this.btnFreehand,
-            this.btnBezier,
-            this.btnErase,
-            this.btnFill,
-            this.btnPicker,
-            this.btnText,
-            this.toolStripSeparator2,
-            this.btnLine,
-            this.btnRect,
-            this.btnCircle,
-            this.btnPoly,
-            this.btnTri,
-            this.btnStar});
-            this.toolStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.VerticalStackWithOverflow;
-            this.toolStrip1.Location = new System.Drawing.Point(0, 24);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(93, 718);
-            this.toolStrip1.TabIndex = 1;
-            this.toolStrip1.Text = "toolStrip1";
-            // numeric controls used by runtime (canvas size / zoom)
-            this.numCanvasWidth.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
-            this.numCanvasWidth.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
-            this.numCanvasWidth.Value = new decimal(new int[] { 800, 0, 0, 0 });
-            this.numCanvasWidth.Width = 60;
-            this.numCanvasHeight.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
-            this.numCanvasHeight.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
-            this.numCanvasHeight.Value = new decimal(new int[] { 600, 0, 0, 0 });
-            this.numCanvasHeight.Width = 60;
-            this.numZoom.Minimum = new decimal(new int[] { 10, 0, 0, 0 });
-            this.numZoom.Maximum = new decimal(new int[] { 500, 0, 0, 0 });
-            this.numZoom.Value = new decimal(new int[] { 100, 0, 0, 0 });
-            this.numZoom.Width = 60;
-
-            // Add size/zoom controls to the toolstrip as hosts (labels + inputs)
-            var hostWLabel = new System.Windows.Forms.ToolStripLabel("W:");
-            var hostHLabel = new System.Windows.Forms.ToolStripLabel("H:");
-            var hostZoomLabel = new System.Windows.Forms.ToolStripLabel("Zoom:");
-            var hostW = new System.Windows.Forms.ToolStripControlHost(this.numCanvasWidth);
-            var hostH = new System.Windows.Forms.ToolStripControlHost(this.numCanvasHeight);
-            var hostZ = new System.Windows.Forms.ToolStripControlHost(this.numZoom);
-            this.btnResizeCanvas.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnResizeCanvas.Name = "btnResizeCanvas";
-            this.btnResizeCanvas.Size = new System.Drawing.Size(90, 19);
-            this.btnResizeCanvas.Text = "Aplicar tamaño";
-            this.btnDeleteLayer.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnDeleteLayer.Name = "btnDeleteLayer";
-            this.btnDeleteLayer.Size = new System.Drawing.Size(90, 19);
-            this.btnDeleteLayer.Text = "Borrar Capa";
-
-            this.toolStrip1.Items.Add(new System.Windows.Forms.ToolStripSeparator());
-            this.toolStrip1.Items.Add(hostWLabel);
-            this.toolStrip1.Items.Add(hostW);
-            this.toolStrip1.Items.Add(hostHLabel);
-            this.toolStrip1.Items.Add(hostH);
-            this.toolStrip1.Items.Add(this.btnResizeCanvas);
-            this.toolStrip1.Items.Add(new System.Windows.Forms.ToolStripSeparator());
-            this.toolStrip1.Items.Add(hostZoomLabel);
-            this.toolStrip1.Items.Add(hostZ);
-            this.toolStrip1.Items.Add(new System.Windows.Forms.ToolStripSeparator());
-            this.toolStrip1.Items.Add(this.btnDeleteLayer);
+            this.pnlLeftShell.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
+            this.pnlLeftShell.Controls.Add(this.pnlSidebarCard);
+            this.pnlLeftShell.Dock = System.Windows.Forms.DockStyle.Left;
+            this.pnlLeftShell.Name = "pnlLeftShell";
+            this.pnlLeftShell.Padding = new System.Windows.Forms.Padding(16);
+            this.pnlLeftShell.Size = new System.Drawing.Size(136, 693);
+            this.pnlLeftShell.TabIndex = 4;
             // 
-            // btnUndo
+            // pnlSidebarCard
             // 
-            this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnUndo.Name = "btnUndo";
-            this.btnUndo.Size = new System.Drawing.Size(90, 19);
-            this.btnUndo.Text = "↺ Deshacer";
-            this.btnUndo.ToolTipText = "Deshacer (Ctrl+Z)";
+            this.pnlSidebarCard.BorderRadius = 16;
+            this.pnlSidebarCard.FillColor = System.Drawing.ColorTranslator.FromHtml("#252526");
+            this.pnlSidebarCard.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlSidebarCard.Name = "pnlSidebarCard";
+            this.pnlSidebarCard.Size = new System.Drawing.Size(104, 440);
+            this.pnlSidebarCard.ShadowDecoration.Color = System.Drawing.Color.Black;
+            this.pnlSidebarCard.ShadowDecoration.Depth = 18;
+            this.pnlSidebarCard.ShadowDecoration.Enabled = true;
+            this.pnlSidebarCard.TabIndex = 0;
             // 
-            // btnRedo
+            // pnlRightShell
             // 
-            this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnRedo.Name = "btnRedo";
-            this.btnRedo.Size = new System.Drawing.Size(90, 19);
-            this.btnRedo.Text = "↻ Rehacer";
-            this.btnRedo.ToolTipText = "Rehacer (Ctrl+Y)";
-            // 
-            // btnSelect
-            // 
-            this.btnSelect.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnSelect.Name = "btnSelect";
-            this.btnSelect.Size = new System.Drawing.Size(90, 19);
-            this.btnSelect.Text = "🖱 Selección";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(90, 6);
-            // 
-            // btnFreehand
-            // 
-            this.btnFreehand.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnFreehand.Name = "btnFreehand";
-            this.btnFreehand.Size = new System.Drawing.Size(90, 19);
-            this.btnFreehand.Text = "✎ Lápiz";
-            // 
-            // btnBezier
-            // 
-            this.btnBezier.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnBezier.Name = "btnBezier";
-            this.btnBezier.Size = new System.Drawing.Size(90, 19);
-            this.btnBezier.Text = "〰 Bézier";
-            // 
-            // btnErase
-            // 
-            this.btnErase.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnErase.Name = "btnErase";
-            this.btnErase.Size = new System.Drawing.Size(90, 19);
-            this.btnErase.Text = "▱ Borrador";
-            // 
-            // btnFill
-            // 
-            this.btnFill.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnFill.Name = "btnFill";
-            this.btnFill.Size = new System.Drawing.Size(90, 19);
-            this.btnFill.Text = "▧ Relleno";
-            // 
-            // btnPicker
-            // 
-            this.btnPicker.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnPicker.Name = "btnPicker";
-            this.btnPicker.Size = new System.Drawing.Size(90, 19);
-            this.btnPicker.Text = "🎨 Color";
-            // 
-            // btnText
-            // 
-            this.btnText.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnText.Name = "btnText";
-            this.btnText.Size = new System.Drawing.Size(90, 19);
-            this.btnText.Text = "A Texto";
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(90, 6);
-            // 
-            // btnLine
-            // 
-            this.btnLine.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnLine.Name = "btnLine";
-            this.btnLine.Size = new System.Drawing.Size(90, 19);
-            this.btnLine.Text = "➖ Línea";
-            // 
-            // btnRect
-            // 
-            this.btnRect.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnRect.Name = "btnRect";
-            this.btnRect.Size = new System.Drawing.Size(90, 19);
-            this.btnRect.Text = "▭ Rect";
-            // 
-            // btnCircle
-            // 
-            this.btnCircle.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnCircle.Name = "btnCircle";
-            this.btnCircle.Size = new System.Drawing.Size(90, 19);
-            this.btnCircle.Text = "⭕ Círculo";
-            // 
-            // btnPoly
-            // 
-            this.btnPoly.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnPoly.Name = "btnPoly";
-            this.btnPoly.Size = new System.Drawing.Size(90, 19);
-            this.btnPoly.Text = "⬡ Polígono";
-            // 
-            // btnTri
-            // 
-            this.btnTri.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnTri.Name = "btnTri";
-            this.btnTri.Size = new System.Drawing.Size(90, 19);
-            this.btnTri.Text = "△ Triángulo";
-            // 
-            // btnStar
-            // 
-            this.btnStar.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnStar.Name = "btnStar";
-            this.btnStar.Size = new System.Drawing.Size(90, 19);
-            this.btnStar.Text = "★ Estrella";
+            this.pnlRightShell.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
+            this.pnlRightShell.Controls.Add(this.pnlRight);
+            this.pnlRightShell.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pnlRightShell.Name = "pnlRightShell";
+            this.pnlRightShell.Padding = new System.Windows.Forms.Padding(18);
+            this.pnlRightShell.Size = new System.Drawing.Size(310, 693);
+            this.pnlRightShell.TabIndex = 5;
             // 
             // pnlRight
             // 
-            this.pnlRight.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.pnlRight.BackColor = System.Drawing.ColorTranslator.FromHtml("#252526");
             this.pnlRight.Padding = new System.Windows.Forms.Padding(10);
             this.pnlRight.Controls.Add(this.lstLayers);
             this.pnlRight.Controls.Add(this.lblLayersTitle);
+            this.pnlRight.Controls.Add(this.pnlPropSpacer);
+            this.pnlRight.Controls.Add(this.pnlPropertiesCard);
+            this.pnlRight.Controls.Add(this.pnlCanvasSpacer);
+            this.pnlRight.Controls.Add(this.pnlCanvasSizeCard);
             this.pnlRight.Controls.Add(this.pnlTransformsSpacer);
             this.pnlRight.Controls.Add(this.pnlTransforms);
             this.pnlRight.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlRight.Name = "pnlRight";
             this.pnlRight.TabIndex = 2;
             // 
+            // pnlCanvasSizeCard
+            // 
+            this.pnlCanvasSizeCard.BorderRadius = 16;
+            this.pnlCanvasSizeCard.FillColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
+            this.pnlCanvasSizeCard.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlCanvasSizeCard.Name = "pnlCanvasSizeCard";
+            this.pnlCanvasSizeCard.Size = new System.Drawing.Size(254, 144);
+            this.pnlCanvasSizeCard.ShadowDecoration.Color = System.Drawing.Color.Black;
+            this.pnlCanvasSizeCard.ShadowDecoration.Depth = 14;
+            this.pnlCanvasSizeCard.ShadowDecoration.Enabled = true;
+            this.pnlCanvasSizeCard.TabIndex = 7;
+            // 
+            // pnlCanvasSpacer
+            // 
+            this.pnlCanvasSpacer.BackColor = System.Drawing.ColorTranslator.FromHtml("#252526");
+            this.pnlCanvasSpacer.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlCanvasSpacer.Height = 12;
+            this.pnlCanvasSpacer.Name = "pnlCanvasSpacer";
+            this.pnlCanvasSpacer.TabIndex = 8;
+            // 
+            // pnlPropertiesCard
+            // 
+            this.pnlPropertiesCard.BorderRadius = 16;
+            this.pnlPropertiesCard.FillColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
+            this.pnlPropertiesCard.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlPropertiesCard.Name = "pnlPropertiesCard";
+            this.pnlPropertiesCard.Size = new System.Drawing.Size(254, 150);
+            this.pnlPropertiesCard.ShadowDecoration.Color = System.Drawing.Color.Black;
+            this.pnlPropertiesCard.ShadowDecoration.Depth = 14;
+            this.pnlPropertiesCard.ShadowDecoration.Enabled = true;
+            this.pnlPropertiesCard.TabIndex = 9;
+            // 
+            // pnlPropSpacer
+            // 
+            this.pnlPropSpacer.BackColor = System.Drawing.ColorTranslator.FromHtml("#252526");
+            this.pnlPropSpacer.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlPropSpacer.Height = 12;
+            this.pnlPropSpacer.Name = "pnlPropSpacer";
+            this.pnlPropSpacer.TabIndex = 10;
+            // 
             // lstLayers
             // 
-            this.lstLayers.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.lstLayers.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.lstLayers.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.lstLayers.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lstLayers.ForeColor = System.Drawing.Color.White;
             this.lstLayers.FormattingEnabled = true;
             this.lstLayers.ItemHeight = 17;
-            this.lstLayers.Location = new System.Drawing.Point(0, 25);
             this.lstLayers.Name = "lstLayers";
-            this.lstLayers.Size = new System.Drawing.Size(250, 501);
             this.lstLayers.TabIndex = 1;
             // 
             // lblLayersTitle
@@ -355,29 +226,27 @@ namespace PaintStudio
             this.lblLayersTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblLayersTitle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblLayersTitle.ForeColor = System.Drawing.Color.White;
-            this.lblLayersTitle.Location = new System.Drawing.Point(0, 0);
+            this.lblLayersTitle.Height = 28;
             this.lblLayersTitle.Name = "lblLayersTitle";
-            this.lblLayersTitle.Size = new System.Drawing.Size(250, 25);
-            this.lblLayersTitle.TabIndex = 0;
-            this.lblLayersTitle.Text = "Gestor de Capas";
-            this.lblLayersTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // pnlTransformsSpacer
-            // 
-            this.pnlTransformsSpacer.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
-            this.pnlTransformsSpacer.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlTransformsSpacer.Height = 14;
-            this.pnlTransformsSpacer.Name = "pnlTransformsSpacer";
-            this.pnlTransformsSpacer.TabIndex = 6;
+            this.lblLayersTitle.Text = "Capas";
+            this.lblLayersTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblLayersTitle.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
             // 
             // pnlTransforms
             // 
-            this.pnlTransforms.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.pnlTransforms.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
             this.pnlTransforms.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlTransforms.Location = new System.Drawing.Point(0, 526);
             this.pnlTransforms.Name = "pnlTransforms";
-            this.pnlTransforms.Size = new System.Drawing.Size(250, 192);
+            this.pnlTransforms.Size = new System.Drawing.Size(254, 192);
             this.pnlTransforms.TabIndex = 2;
+            // 
+            // pnlTransformsSpacer
+            // 
+            this.pnlTransformsSpacer.BackColor = System.Drawing.ColorTranslator.FromHtml("#252526");
+            this.pnlTransformsSpacer.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlTransformsSpacer.Height = 12;
+            this.pnlTransformsSpacer.Name = "pnlTransformsSpacer";
+            this.pnlTransformsSpacer.TabIndex = 6;
             // 
             // lblTransform
             // 
@@ -389,12 +258,12 @@ namespace PaintStudio
             // pnlCenter
             // 
             this.pnlCenter.AutoScroll = true;
-            this.pnlCenter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(18)))), ((int)(((byte)(18)))));
+            this.pnlCenter.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
             this.pnlCenter.Controls.Add(this.canvasPicBox);
             this.pnlCenter.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlCenter.Location = new System.Drawing.Point(93, 24);
+            this.pnlCenter.Location = new System.Drawing.Point(136, 24);
             this.pnlCenter.Name = "pnlCenter";
-            this.pnlCenter.Size = new System.Drawing.Size(856, 718);
+            this.pnlCenter.Size = new System.Drawing.Size(753, 694);
             this.pnlCenter.TabIndex = 3;
             // 
             // canvasPicBox
@@ -407,51 +276,64 @@ namespace PaintStudio
             this.canvasPicBox.TabIndex = 0;
             this.canvasPicBox.TabStop = false;
             // 
-            // pnlLeftShell
+            // statusStrip1
             // 
-            this.pnlLeftShell.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
-            this.pnlLeftShell.Controls.Add(this.toolStrip1);
-            this.pnlLeftShell.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlLeftShell.Name = "pnlLeftShell";
-            this.pnlLeftShell.Padding = new System.Windows.Forms.Padding(18);
-            this.pnlLeftShell.Size = new System.Drawing.Size(188, 693);
-            this.pnlLeftShell.TabIndex = 4;
+            this.statusStrip1.BackColor = System.Drawing.ColorTranslator.FromHtml("#1A1A1A");
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lblStatusCoords,
+            this.lblStatusZoom,
+            this.lblStatusCanvas,
+            this.lblStatusToolSpring,
+            this.lblStatusTool});
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.SizingGrip = false;
+            this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            this.statusStrip1.TabIndex = 6;
             // 
-            // pnlRightShell
+            // lblStatusCoords
             // 
-            this.pnlRightShell.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
-            this.pnlRightShell.Controls.Add(this.pnlRight);
-            this.pnlRightShell.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRightShell.Name = "pnlRightShell";
-            this.pnlRightShell.Padding = new System.Windows.Forms.Padding(18);
-            this.pnlRightShell.Size = new System.Drawing.Size(310, 693);
-            this.pnlRightShell.TabIndex = 5;
-
-            // ---- Dark Theme Palette ----
-            this.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
-            this.menuStrip1.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
-            this.menuStrip1.ForeColor = System.Drawing.Color.White;
-            this.menuStrip1.Renderer = new DarkToolStripRenderer();
-            this.toolStrip1.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
-            this.toolStrip1.ForeColor = System.Drawing.Color.White;
-            this.toolStrip1.Renderer = new DarkToolStripRenderer();
-            this.pnlRight.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
-            this.pnlTransforms.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
-            this.lstLayers.BackColor = System.Drawing.ColorTranslator.FromHtml("#1E1E1E");
-            this.lstLayers.ForeColor = System.Drawing.Color.White;
-            this.lstLayers.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.lblLayersTitle.ForeColor = System.Drawing.Color.White;
-            this.pnlCenter.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
+            this.lblStatusCoords.ForeColor = System.Drawing.Color.FromArgb(160, 160, 160);
+            this.lblStatusCoords.Name = "lblStatusCoords";
+            this.lblStatusCoords.Text = "X: 0  Y: 0";
+            this.lblStatusCoords.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.lblStatusCoords.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+            // 
+            // lblStatusZoom
+            // 
+            this.lblStatusZoom.ForeColor = System.Drawing.Color.FromArgb(160, 160, 160);
+            this.lblStatusZoom.Name = "lblStatusZoom";
+            this.lblStatusZoom.Text = "Zoom: 100%";
+            this.lblStatusZoom.Margin = new System.Windows.Forms.Padding(8, 3, 4, 2);
+            // 
+            // lblStatusCanvas
+            // 
+            this.lblStatusCanvas.ForeColor = System.Drawing.Color.FromArgb(160, 160, 160);
+            this.lblStatusCanvas.Name = "lblStatusCanvas";
+            this.lblStatusCanvas.Text = "800 x 600 px";
+            this.lblStatusCanvas.Margin = new System.Windows.Forms.Padding(8, 3, 4, 2);
+            // 
+            // lblStatusToolSpring
+            // 
+            this.lblStatusToolSpring.Name = "lblStatusToolSpring";
+            this.lblStatusToolSpring.Spring = true;
+            this.lblStatusToolSpring.Text = "";
+            // 
+            // lblStatusTool
+            // 
+            this.lblStatusTool.ForeColor = System.Drawing.Color.FromArgb(160, 160, 160);
+            this.lblStatusTool.Name = "lblStatusTool";
+            this.lblStatusTool.Text = "Herramienta: Selección";
             // 
             // FrmHome
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(18)))), ((int)(((byte)(18)))));
+            this.BackColor = System.Drawing.ColorTranslator.FromHtml("#121212");
             this.ClientSize = new System.Drawing.Size(1199, 742);
             this.Controls.Add(this.pnlCenter);
             this.Controls.Add(this.pnlRightShell);
             this.Controls.Add(this.pnlLeftShell);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.MainMenuStrip = this.menuStrip1;
@@ -460,14 +342,12 @@ namespace PaintStudio
             this.Text = "Paint 2026 - PaintStudio";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numCanvasWidth)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numCanvasHeight)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numZoom)).EndInit();
+            this.pnlLeftShell.ResumeLayout(false);
             this.pnlRight.ResumeLayout(false);
             this.pnlCenter.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.canvasPicBox)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -481,34 +361,36 @@ namespace PaintStudio
         private System.Windows.Forms.ToolStripMenuItem exportarImagenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem salirToolStripMenuItem;
 
-        private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripButton btnUndo;
-        private System.Windows.Forms.ToolStripButton btnRedo;
-        private System.Windows.Forms.ToolStripButton btnDeleteLayer;
-        private System.Windows.Forms.ToolStripButton btnResizeCanvas;
+        private System.Windows.Forms.Panel pnlLeftShell;
+        private Guna.UI2.WinForms.Guna2Panel pnlSidebarCard;
+        private Guna.UI2.WinForms.Guna2Button btnUndo;
+        private Guna.UI2.WinForms.Guna2Button btnRedo;
+        private Guna.UI2.WinForms.Guna2Button btnDeleteLayer;
+        private Guna.UI2.WinForms.Guna2Button btnResizeCanvas;
         private System.Windows.Forms.NumericUpDown numCanvasWidth;
         private System.Windows.Forms.NumericUpDown numCanvasHeight;
         private System.Windows.Forms.NumericUpDown numZoom;
-        private System.Windows.Forms.ToolStripButton btnSelect;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton btnFreehand;
-        private System.Windows.Forms.ToolStripButton btnBezier;
-        private System.Windows.Forms.ToolStripButton btnErase;
-        private System.Windows.Forms.ToolStripButton btnFill;
-        private System.Windows.Forms.ToolStripButton btnPicker;
-        private System.Windows.Forms.ToolStripButton btnText;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton btnLine;
-        private System.Windows.Forms.ToolStripButton btnRect;
-        private System.Windows.Forms.ToolStripButton btnCircle;
-        private System.Windows.Forms.ToolStripButton btnPoly;
-        private System.Windows.Forms.ToolStripButton btnTri;
-        private System.Windows.Forms.ToolStripButton btnStar;
+        private Guna.UI2.WinForms.Guna2Button btnSelect;
+        private Guna.UI2.WinForms.Guna2Button btnFreehand;
+        private Guna.UI2.WinForms.Guna2Button btnBezier;
+        private Guna.UI2.WinForms.Guna2Button btnErase;
+        private Guna.UI2.WinForms.Guna2Button btnFill;
+        private Guna.UI2.WinForms.Guna2Button btnPicker;
+        private Guna.UI2.WinForms.Guna2Button btnText;
+        private Guna.UI2.WinForms.Guna2Button btnLine;
+        private Guna.UI2.WinForms.Guna2Button btnRect;
+        private Guna.UI2.WinForms.Guna2Button btnCircle;
+        private Guna.UI2.WinForms.Guna2Button btnPoly;
+        private Guna.UI2.WinForms.Guna2Button btnTri;
+        private Guna.UI2.WinForms.Guna2Button btnStar;
 
         private System.Windows.Forms.Panel pnlRight;
-        private System.Windows.Forms.Panel pnlLeftShell;
         private System.Windows.Forms.Panel pnlRightShell;
         private System.Windows.Forms.Panel pnlTransformsSpacer;
+        private System.Windows.Forms.Panel pnlCanvasSpacer;
+        private System.Windows.Forms.Panel pnlPropSpacer;
+        private Guna.UI2.WinForms.Guna2Panel pnlCanvasSizeCard;
+        private Guna.UI2.WinForms.Guna2Panel pnlPropertiesCard;
         private System.Windows.Forms.Label lblLayersTitle;
         private System.Windows.Forms.ListBox lstLayers;
         private System.Windows.Forms.Panel pnlTransforms;
@@ -516,6 +398,13 @@ namespace PaintStudio
 
         private System.Windows.Forms.Panel pnlCenter;
         private System.Windows.Forms.PictureBox canvasPicBox;
+
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatusCoords;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatusZoom;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatusCanvas;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatusToolSpring;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatusTool;
 
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
