@@ -7,11 +7,13 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class PolygonShape : Shape
     {
+        // -------------------- AGREGAR VÉRTICES --------------------
         public void AddVertex(PointD p)
         {
             Vertices.Add(p);
         }
 
+        // -------------------- DIBUJAR POLÍGONO --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count < 2) return;
@@ -40,6 +42,7 @@ namespace PaintStudio.Models
             }
         }
 
+        // -------------------- VERIFICAR COLISIÓN --------------------
         public override bool ContainsPoint(PointD p)
         {
             if (Vertices.Count < 3) return false;

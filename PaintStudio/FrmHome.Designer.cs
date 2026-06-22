@@ -4,8 +4,10 @@ namespace PaintStudio
 {
     partial class FrmHome
     {
+        // -------------------- COMPONENTES --------------------
         private System.ComponentModel.IContainer components = null;
 
+        // -------------------- DESTRUCTOR --------------------
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -15,6 +17,7 @@ namespace PaintStudio
             base.Dispose(disposing);
         }
 
+        // -------------------- INICIALIZAR COMPONENTES --------------------
         private void InitializeComponent()
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -56,6 +59,8 @@ namespace PaintStudio
             ((System.ComponentModel.ISupportInitialize)(this.canvasPicBox)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
+
+            // -------------------- MENU STRIP --------------------
             // 
             // menuStrip1
             // 
@@ -68,6 +73,7 @@ namespace PaintStudio
             this.menuStrip1.Size = new System.Drawing.Size(1199, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
+
             // 
             // archivoToolStripMenuItem
             // 
@@ -81,6 +87,7 @@ namespace PaintStudio
             this.archivoToolStripMenuItem.Name = "archivoToolStripMenuItem";
             this.archivoToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
             this.archivoToolStripMenuItem.Text = "Archivo";
+
             // 
             // nuevoToolStripMenuItem
             // 
@@ -89,6 +96,7 @@ namespace PaintStudio
             this.nuevoToolStripMenuItem.Name = "nuevoToolStripMenuItem";
             this.nuevoToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.nuevoToolStripMenuItem.Text = "Nuevo";
+
             // 
             // guardarProyectoToolStripMenuItem
             // 
@@ -97,6 +105,7 @@ namespace PaintStudio
             this.guardarProyectoToolStripMenuItem.Name = "guardarProyectoToolStripMenuItem";
             this.guardarProyectoToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.guardarProyectoToolStripMenuItem.Text = "Guardar Proyecto (.paintproj)";
+
             // 
             // cargarProyectoToolStripMenuItem
             // 
@@ -105,6 +114,7 @@ namespace PaintStudio
             this.cargarProyectoToolStripMenuItem.Name = "cargarProyectoToolStripMenuItem";
             this.cargarProyectoToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.cargarProyectoToolStripMenuItem.Text = "Cargar Proyecto (.paintproj)";
+
             // 
             // exportarImagenToolStripMenuItem
             // 
@@ -113,6 +123,7 @@ namespace PaintStudio
             this.exportarImagenToolStripMenuItem.Name = "exportarImagenToolStripMenuItem";
             this.exportarImagenToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.exportarImagenToolStripMenuItem.Text = "Exportar Imagen (.png)";
+
             // 
             // salirToolStripMenuItem
             // 
@@ -121,6 +132,8 @@ namespace PaintStudio
             this.salirToolStripMenuItem.Name = "salirToolStripMenuItem";
             this.salirToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.salirToolStripMenuItem.Text = "Salir";
+
+            // -------------------- PANEL IZQUIERDO --------------------
             // 
             // pnlLeftShell
             // 
@@ -131,6 +144,7 @@ namespace PaintStudio
             this.pnlLeftShell.Padding = new System.Windows.Forms.Padding(16);
             this.pnlLeftShell.Size = new System.Drawing.Size(136, 693);
             this.pnlLeftShell.TabIndex = 4;
+
             // 
             // pnlSidebarCard
             // 
@@ -143,6 +157,8 @@ namespace PaintStudio
             this.pnlSidebarCard.ShadowDecoration.Depth = 18;
             this.pnlSidebarCard.ShadowDecoration.Enabled = true;
             this.pnlSidebarCard.TabIndex = 0;
+
+            // -------------------- PANEL DERECHO --------------------
             // 
             // pnlRightShell
             // 
@@ -153,6 +169,7 @@ namespace PaintStudio
             this.pnlRightShell.Padding = new System.Windows.Forms.Padding(18);
             this.pnlRightShell.Size = new System.Drawing.Size(310, 693);
             this.pnlRightShell.TabIndex = 5;
+
             // 
             // pnlRight
             // 
@@ -169,6 +186,7 @@ namespace PaintStudio
             this.pnlRight.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlRight.Name = "pnlRight";
             this.pnlRight.TabIndex = 2;
+
             // 
             // pnlCanvasSizeCard
             // 
@@ -181,6 +199,7 @@ namespace PaintStudio
             this.pnlCanvasSizeCard.ShadowDecoration.Depth = 14;
             this.pnlCanvasSizeCard.ShadowDecoration.Enabled = true;
             this.pnlCanvasSizeCard.TabIndex = 7;
+
             // 
             // pnlCanvasSpacer
             // 
@@ -189,6 +208,7 @@ namespace PaintStudio
             this.pnlCanvasSpacer.Height = 12;
             this.pnlCanvasSpacer.Name = "pnlCanvasSpacer";
             this.pnlCanvasSpacer.TabIndex = 8;
+
             // 
             // pnlPropertiesCard
             // 
@@ -201,6 +221,7 @@ namespace PaintStudio
             this.pnlPropertiesCard.ShadowDecoration.Depth = 14;
             this.pnlPropertiesCard.ShadowDecoration.Enabled = true;
             this.pnlPropertiesCard.TabIndex = 9;
+
             // 
             // pnlPropSpacer
             // 
@@ -209,6 +230,7 @@ namespace PaintStudio
             this.pnlPropSpacer.Height = 12;
             this.pnlPropSpacer.Name = "pnlPropSpacer";
             this.pnlPropSpacer.TabIndex = 10;
+
             // 
             // lstLayers
             // 
@@ -220,6 +242,7 @@ namespace PaintStudio
             this.lstLayers.ItemHeight = 17;
             this.lstLayers.Name = "lstLayers";
             this.lstLayers.TabIndex = 1;
+
             // 
             // lblLayersTitle
             // 
@@ -231,6 +254,7 @@ namespace PaintStudio
             this.lblLayersTitle.Text = "Capas";
             this.lblLayersTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblLayersTitle.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
+
             // 
             // pnlTransforms
             // 
@@ -239,6 +263,7 @@ namespace PaintStudio
             this.pnlTransforms.Name = "pnlTransforms";
             this.pnlTransforms.Size = new System.Drawing.Size(254, 192);
             this.pnlTransforms.TabIndex = 2;
+
             // 
             // pnlTransformsSpacer
             // 
@@ -247,6 +272,7 @@ namespace PaintStudio
             this.pnlTransformsSpacer.Height = 12;
             this.pnlTransformsSpacer.Name = "pnlTransformsSpacer";
             this.pnlTransformsSpacer.TabIndex = 6;
+
             // 
             // lblTransform
             // 
@@ -254,6 +280,8 @@ namespace PaintStudio
             this.lblTransform.Name = "lblTransform";
             this.lblTransform.Size = new System.Drawing.Size(100, 23);
             this.lblTransform.TabIndex = 0;
+
+            // -------------------- PANEL CENTRAL --------------------
             // 
             // pnlCenter
             // 
@@ -265,6 +293,7 @@ namespace PaintStudio
             this.pnlCenter.Name = "pnlCenter";
             this.pnlCenter.Size = new System.Drawing.Size(753, 694);
             this.pnlCenter.TabIndex = 3;
+
             // 
             // canvasPicBox
             // 
@@ -275,6 +304,8 @@ namespace PaintStudio
             this.canvasPicBox.Size = new System.Drawing.Size(800, 600);
             this.canvasPicBox.TabIndex = 0;
             this.canvasPicBox.TabStop = false;
+
+            // -------------------- BARRA DE ESTADO --------------------
             // 
             // statusStrip1
             // 
@@ -289,6 +320,7 @@ namespace PaintStudio
             this.statusStrip1.SizingGrip = false;
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.statusStrip1.TabIndex = 6;
+
             // 
             // lblStatusCoords
             // 
@@ -297,6 +329,7 @@ namespace PaintStudio
             this.lblStatusCoords.Text = "X: 0  Y: 0";
             this.lblStatusCoords.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.lblStatusCoords.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+
             // 
             // lblStatusZoom
             // 
@@ -304,6 +337,7 @@ namespace PaintStudio
             this.lblStatusZoom.Name = "lblStatusZoom";
             this.lblStatusZoom.Text = "Zoom: 100%";
             this.lblStatusZoom.Margin = new System.Windows.Forms.Padding(8, 3, 4, 2);
+
             // 
             // lblStatusCanvas
             // 
@@ -311,18 +345,22 @@ namespace PaintStudio
             this.lblStatusCanvas.Name = "lblStatusCanvas";
             this.lblStatusCanvas.Text = "800 x 600 px";
             this.lblStatusCanvas.Margin = new System.Windows.Forms.Padding(8, 3, 4, 2);
+
             // 
             // lblStatusToolSpring
             // 
             this.lblStatusToolSpring.Name = "lblStatusToolSpring";
             this.lblStatusToolSpring.Spring = true;
             this.lblStatusToolSpring.Text = "";
+
             // 
             // lblStatusTool
             // 
             this.lblStatusTool.ForeColor = System.Drawing.Color.FromArgb(160, 160, 160);
             this.lblStatusTool.Name = "lblStatusTool";
             this.lblStatusTool.Text = "Herramienta: Selección";
+
+            // -------------------- FORMULARIO PRINCIPAL --------------------
             // 
             // FrmHome
             // 
@@ -350,9 +388,9 @@ namespace PaintStudio
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
+        // -------------------- CONTROLES DECLARADOS --------------------
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem archivoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nuevoToolStripMenuItem;

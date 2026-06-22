@@ -7,11 +7,13 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class FreehandShape : Shape
     {
+        // -------------------- AGREGAR PUNTOS --------------------
         public void AddPoint(PointD p)
         {
             Vertices.Add(p);
         }
 
+        // -------------------- DIBUJAR TRAZO --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count < 2) return;
@@ -26,6 +28,7 @@ namespace PaintStudio.Models
             }
         }
 
+        // -------------------- VERIFICAR COLISIÓN --------------------
         public override bool ContainsPoint(PointD p)
         {
             if (Vertices.Count < 2) return false;

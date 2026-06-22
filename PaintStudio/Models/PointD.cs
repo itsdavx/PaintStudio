@@ -3,22 +3,21 @@ using System.Drawing;
 
 namespace PaintStudio.Models
 {
-    /// <summary>
-    /// Representa un punto bidimensional con precisión de coma flotante,
-    /// necesario para evitar pérdida de datos durante las transformaciones geométricas (Rotación, Escala).
-    /// </summary>
     [System.Serializable]
     public struct PointD
     {
+        // -------------------- PROPIEDADES --------------------
         public double X { get; set; }
         public double Y { get; set; }
 
+        // -------------------- CONSTRUCTOR --------------------
         public PointD(double x, double y)
         {
             X = x;
             Y = y;
         }
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public Point ToPoint()
         {
             return new System.Drawing.Point((int)Math.Round(X), (int)Math.Round(Y));

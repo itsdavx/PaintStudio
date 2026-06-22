@@ -4,19 +4,17 @@ using PaintStudio.Utils;
 
 namespace PaintStudio.Models
 {
-    /// <summary>
-    /// Representa un comando de relleno en el lienzo.
-    /// Al redibujar, ejecuta FloodFill en la coordenada almacenada.
-    /// </summary>
     [System.Serializable]
     public class FillShape : Shape
     {
+        // -------------------- CONSTRUCTOR --------------------
         public FillShape(PointD startPoint, Color fillColor)
         {
             Vertices.Add(startPoint);
             FillColor = fillColor;
         }
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count > 0)

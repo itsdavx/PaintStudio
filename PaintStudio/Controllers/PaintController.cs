@@ -15,112 +15,51 @@ namespace PaintStudio.Controllers
 
     public class PaintController
     {
+        // -------------------- CAMPOS PRIVADOS --------------------
         private CanvasModel Model;
         private Rasterizer Renderer;
         private PictureBox CanvasView;
+        private Shape currentShape;
+        private bool isDrawing;
+        private bool isResizingShape;
+        private ShapeHandle activeHandle = ShapeHandle.None;
+        private Shape selectedShape;
+        private PointD startPoint;
+        private readonly SelectionManager selectionManager = new SelectionManager();
+        private readonly Stack<List<Shape>> undoStack = new Stack<List<Shape>>();
+        private readonly Stack<List<Shape>> redoStack = new Stack<List<Shape>>();
+        private const int MaxUndoSteps = 40;
 
+        // -------------------- PROPIEDADES PÚBLICAS --------------------
         public ToolMode CurrentTool { get; set; } = ToolMode.Freehand;
         public Color CurrentColor { get; set; } = Color.Black;
         public Color CurrentFillColor { get; set; } = Color.White;
         public bool FillEnabled { get; set; } = false;
         public int CurrentThickness { get; set; } = 2;
         public double ZoomFactor { get; set; } = 1.0;
+        public Shape SelectedShape => selectedShape;
+        public SelectionManager Selection => selectionManager;
 
+        // -------------------- EVENTOS --------------------
         public Action<Color> OnColorPicked;
         public Action<Point> OnRequestTextInput;
         public Action OnLayersChanged;
-        public Action<bool, bool> OnUndoRedoStateChanged; // (canUndo, canRedo)
+        public Action<bool, bool> OnUndoRedoStateChanged;
 
-        private Shape currentShape;
-        private bool isDrawing;
-        private Shape selectedShape;
-        private PointD startPoint;
-
-        private readonly Stack<System.Collections.Generic.List<Shape>> undoStack = new Stack<System.Collections.Generic.List<Shape>>();
-        private readonly Stack<System.Collections.Generic.List<Shape>> redoStack = new Stack<System.Collections.Generic.List<Shape>>();
-        private const int MaxUndoSteps = 40;
-
+        // -------------------- CONSTRUCTOR --------------------
         public PaintController(PictureBox view)
         {
             Model = new CanvasModel();
             CanvasView = view;
             Renderer = new Rasterizer(view.Width, view.Height);
-
             CanvasView.MouseDown += CanvasView_MouseDown;
             CanvasView.MouseMove += CanvasView_MouseMove;
             CanvasView.MouseUp += CanvasView_MouseUp;
-
             Redraw();
         }
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public IReadOnlyList<Shape> GetShapes() => Model.Shapes;
-
-        // ---------------- UNDO / REDO ----------------
-        // Se usa un Memento simple: se serializa una "foto" de la lista de figuras
-        // antes de cada operación que modifica el lienzo (nueva figura, borrado,
-        // transformación, limpieza, redimensionado). Se reutiliza el mismo mecanismo
-        // de serialización binaria que ya usa CanvasModel para guardar proyectos.
-        // Crear una copia profunda de la lista de figuras usando Shape.Clone()
-        private System.Collections.Generic.List<Shape> CloneShapes()
-        {
-            var list = new System.Collections.Generic.List<Shape>(Model.Shapes.Count);
-            foreach (var s in Model.Shapes)
-            {
-                list.Add(s?.Clone());
-            }
-            return list;
-        }
-
-        public void SaveUndoState()
-        {
-            // Guardar una copia profunda en la pila de undo. Más rápido que serializar a binario.
-            undoStack.Push(CloneShapes());
-            redoStack.Clear();
-            while (undoStack.Count > MaxUndoSteps)
-            {
-                // Quita el snapshot más antiguo para no crecer indefinidamente en memoria
-                var temp = new Stack<System.Collections.Generic.List<Shape>>(undoStack);
-                undoStack.Clear();
-                temp.Pop();
-                while (temp.Count > 0) undoStack.Push(temp.Pop());
-            }
-            NotifyUndoRedoState();
-        }
-
-        public bool CanUndo => undoStack.Count > 0;
-        public bool CanRedo => redoStack.Count > 0;
-
-        public void Undo()
-        {
-            if (undoStack.Count == 0) return;
-            // Guardar estado actual en redo
-            redoStack.Push(CloneShapes());
-            var snapshot = undoStack.Pop();
-            Model.SetShapes(snapshot);
-            selectedShape = null;
-            OnLayersChanged?.Invoke();
-            NotifyUndoRedoState();
-            Redraw();
-        }
-
-        public void Redo()
-        {
-            if (redoStack.Count == 0) return;
-            // Guardar estado actual en undo
-            undoStack.Push(CloneShapes());
-            var snapshot = redoStack.Pop();
-            Model.SetShapes(snapshot);
-            selectedShape = null;
-            OnLayersChanged?.Invoke();
-            NotifyUndoRedoState();
-            Redraw();
-        }
-
-        private void NotifyUndoRedoState()
-        {
-            OnUndoRedoStateChanged?.Invoke(CanUndo, CanRedo);
-        }
-        // ------------------------------------------------
 
         public void SelectShapeIndex(int index)
         {
@@ -152,28 +91,200 @@ namespace PaintStudio.Controllers
             Redraw();
         }
 
+        public void ApplyTransformation(double[,] matrix)
+        {
+            if (selectedShape != null)
+            {
+                selectedShape.ApplyTransformation(matrix);
+                Redraw();
+            }
+        }
+
+        public void ClearCanvas()
+        {
+            SaveUndoState();
+            Model.Clear();
+            selectedShape = null;
+            OnLayersChanged?.Invoke();
+            Redraw();
+        }
+
+        public void AddTextShape(PointD p, string text, Font font)
+        {
+            SaveUndoState();
+            Model.AddShape(new TextShape(p, text, font));
+            OnLayersChanged?.Invoke();
+            Redraw();
+        }
+
+        public void Redraw()
+        {
+            Renderer.Clear(Color.White);
+            foreach (var shape in Model.Shapes)
+                shape.Draw(Renderer);
+            CanvasView.Image = Renderer.Canvas;
+            CanvasView.Refresh();
+        }
+
+        public void SaveImage(string path)
+        {
+            Renderer.Canvas.Save(path);
+        }
+
+        public void SaveProject(string path)
+        {
+            Model.SaveToFile(path);
+        }
+
+        public void LoadProject(string path)
+        {
+            Model.LoadFromFile(path);
+            undoStack.Clear();
+            redoStack.Clear();
+            NotifyUndoRedoState();
+            selectedShape = null;
+            Redraw();
+            OnLayersChanged?.Invoke();
+        }
+
+        public void ResizeCanvas(int width, int height)
+        {
+            if (width > 0 && height > 0)
+            {
+                SaveUndoState();
+                Renderer?.Dispose();
+                Renderer = new Rasterizer(width, height);
+                CanvasView.Width = (int)(width * ZoomFactor);
+                CanvasView.Height = (int)(height * ZoomFactor);
+                CanvasView.SizeMode = PictureBoxSizeMode.StretchImage;
+                Redraw();
+            }
+        }
+
+        public Size GetCanvasSize() => new Size(Renderer.Canvas.Width, Renderer.Canvas.Height);
+
+        public void SetZoom(double zoom)
+        {
+            if (zoom <= 0) return;
+            ZoomFactor = zoom;
+            CanvasView.Width = (int)(Renderer.Canvas.Width * zoom);
+            CanvasView.Height = (int)(Renderer.Canvas.Height * zoom);
+            CanvasView.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // -------------------- DESHACER / REHACER --------------------
+        public void SaveUndoState()
+        {
+            undoStack.Push(CloneShapes());
+            redoStack.Clear();
+            while (undoStack.Count > MaxUndoSteps)
+            {
+                var temp = new Stack<List<Shape>>(undoStack);
+                undoStack.Clear();
+                temp.Pop();
+                while (temp.Count > 0) undoStack.Push(temp.Pop());
+            }
+            NotifyUndoRedoState();
+        }
+
+        public bool CanUndo => undoStack.Count > 0;
+        public bool CanRedo => redoStack.Count > 0;
+
+        public void Undo()
+        {
+            if (undoStack.Count == 0) return;
+            redoStack.Push(CloneShapes());
+            var snapshot = undoStack.Pop();
+            Model.SetShapes(snapshot);
+            selectedShape = null;
+            OnLayersChanged?.Invoke();
+            NotifyUndoRedoState();
+            Redraw();
+        }
+
+        public void Redo()
+        {
+            if (redoStack.Count == 0) return;
+            undoStack.Push(CloneShapes());
+            var snapshot = redoStack.Pop();
+            Model.SetShapes(snapshot);
+            selectedShape = null;
+            OnLayersChanged?.Invoke();
+            NotifyUndoRedoState();
+            Redraw();
+        }
+
+        // -------------------- MÉTODOS PRIVADOS --------------------
+        private List<Shape> CloneShapes()
+        {
+            var list = new List<Shape>(Model.Shapes.Count);
+            foreach (var s in Model.Shapes)
+                list.Add(s?.Clone());
+            return list;
+        }
+
+        private void NotifyUndoRedoState()
+        {
+            OnUndoRedoStateChanged?.Invoke(CanUndo, CanRedo);
+        }
+
         private void SelectShapeAt(PointD p)
         {
             selectedShape = null;
-            foreach (var s in Model.Shapes)
-            {
-                s.Selected = false;
-            }
-
-            // Recorrer de atrás hacia adelante (capas superiores primero)
+            foreach (var s in Model.Shapes) s.Selected = false;
             for (int i = Model.Shapes.Count - 1; i >= 0; i--)
             {
                 if (Model.Shapes[i].ContainsPoint(p))
                 {
                     selectedShape = Model.Shapes[i];
                     selectedShape.Selected = true;
-                    // También podemos disparar un evento para que Form1 seleccione en el ListBox, pero es opcional.
                     break;
                 }
             }
             Redraw();
         }
 
+        private void ResizeSelectedShape(PointD mouse)
+        {
+            var b = selectedShape.GetBounds();
+            double minSize = 4;
+            double left = b.Left, top = b.Top, right = b.Right, bottom = b.Bottom;
+            double anchorX = left, anchorY = top, targetW = b.Width, targetH = b.Height;
+
+            switch (activeHandle)
+            {
+                case ShapeHandle.BottomRight: anchorX = left; anchorY = top; targetW = mouse.X - left; targetH = mouse.Y - top; break;
+                case ShapeHandle.BottomLeft: anchorX = right; anchorY = top; targetW = right - mouse.X; targetH = mouse.Y - top; break;
+                case ShapeHandle.TopRight: anchorX = left; anchorY = bottom; targetW = mouse.X - left; targetH = bottom - mouse.Y; break;
+                case ShapeHandle.TopLeft: anchorX = right; anchorY = bottom; targetW = right - mouse.X; targetH = bottom - mouse.Y; break;
+                case ShapeHandle.MiddleRight: anchorX = left; targetW = mouse.X - left; break;
+                case ShapeHandle.MiddleLeft: anchorX = right; targetW = right - mouse.X; break;
+                case ShapeHandle.BottomCenter: anchorY = top; targetH = mouse.Y - top; break;
+                case ShapeHandle.TopCenter: anchorY = bottom; targetH = bottom - mouse.Y; break;
+                default: return;
+            }
+
+            if (targetW < minSize) targetW = minSize;
+            if (targetH < minSize) targetH = minSize;
+
+            double sx = b.Width > 0 ? targetW / b.Width : 1;
+            double sy = b.Height > 0 ? targetH / b.Height : 1;
+            selectedShape.ApplyTransformation(Transformations.GetScaleMatrix(sx, sy, anchorX, anchorY));
+        }
+
+        private Cursor CursorForHandle(ShapeHandle h)
+        {
+            switch (h)
+            {
+                case ShapeHandle.TopLeft: case ShapeHandle.BottomRight: return Cursors.SizeNWSE;
+                case ShapeHandle.TopRight: case ShapeHandle.BottomLeft: return Cursors.SizeNESW;
+                case ShapeHandle.MiddleLeft: case ShapeHandle.MiddleRight: return Cursors.SizeWE;
+                case ShapeHandle.TopCenter: case ShapeHandle.BottomCenter: return Cursors.SizeNS;
+                default: return Cursors.Default;
+            }
+        }
+
+        // -------------------- EVENTOS DEL RATÓN --------------------
         private void CanvasView_MouseDown(object sender, MouseEventArgs e)
         {
             PointD p = new PointD(e.X / ZoomFactor, e.Y / ZoomFactor);
@@ -196,6 +307,17 @@ namespace PaintStudio.Controllers
 
             if (CurrentTool == ToolMode.Select)
             {
+                if (selectedShape != null)
+                {
+                    var handle = selectionManager.HitTestHandles(selectedShape, ZoomFactor, e.Location);
+                    if (handle != ShapeHandle.None)
+                    {
+                        isResizingShape = true;
+                        activeHandle = handle;
+                        SaveUndoState();
+                        return;
+                    }
+                }
                 SelectShapeAt(p);
                 return;
             }
@@ -217,9 +339,7 @@ namespace PaintStudio.Controllers
                     currentShape = null;
                 }
                 else
-                {
                     poly.AddVertex(p);
-                }
                 Redraw();
                 return;
             }
@@ -232,9 +352,7 @@ namespace PaintStudio.Controllers
                     currentShape = null;
                 }
                 else
-                {
                     bezier.AddControlPoint(p);
-                }
                 Redraw();
                 return;
             }
@@ -300,6 +418,16 @@ namespace PaintStudio.Controllers
 
         private void CanvasView_MouseMove(object sender, MouseEventArgs e)
         {
+            if (isResizingShape && selectedShape != null)
+            {
+                ResizeSelectedShape(new PointD(e.X / ZoomFactor, e.Y / ZoomFactor));
+                Redraw();
+                return;
+            }
+
+            if (CurrentTool == ToolMode.Select && selectedShape != null && !isDrawing)
+                CanvasView.Cursor = CursorForHandle(selectionManager.HitTestHandles(selectedShape, ZoomFactor, e.Location));
+
             if (!isDrawing || currentShape == null) return;
 
             PointD p = new PointD(e.X / ZoomFactor, e.Y / ZoomFactor);
@@ -346,96 +474,19 @@ namespace PaintStudio.Controllers
 
         private void CanvasView_MouseUp(object sender, MouseEventArgs e)
         {
+            if (isResizingShape)
+            {
+                isResizingShape = false;
+                activeHandle = ShapeHandle.None;
+                CanvasView.Cursor = Cursors.Default;
+                return;
+            }
+
             if (CurrentTool != ToolMode.Polygon && CurrentTool != ToolMode.Bezier)
             {
                 isDrawing = false;
                 currentShape = null;
             }
-        }
-
-        public void ApplyTransformation(double[,] matrix)
-        {
-            if (selectedShape != null)
-            {
-                selectedShape.ApplyTransformation(matrix);
-                Redraw();
-            }
-        }
-
-        public void ClearCanvas()
-        {
-            SaveUndoState();
-            Model.Clear();
-            selectedShape = null;
-            OnLayersChanged?.Invoke();
-            Redraw();
-        }
-
-        public void AddTextShape(PointD p, string text, Font font)
-        {
-            SaveUndoState();
-            Model.AddShape(new TextShape(p, text, font));
-            OnLayersChanged?.Invoke();
-            Redraw();
-        }
-
-        public void Redraw()
-        {
-            Renderer.Clear(Color.White);
-            foreach (var shape in Model.Shapes)
-            {
-                shape.Draw(Renderer);
-            }
-            CanvasView.Image = Renderer.Canvas;
-            CanvasView.Refresh();
-        }
-
-        public void SaveImage(string path)
-        {
-            Renderer.Canvas.Save(path);
-        }
-
-        public void SaveProject(string path)
-        {
-            Model.SaveToFile(path);
-        }
-
-        public void LoadProject(string path)
-        {
-            Model.LoadFromFile(path);
-            undoStack.Clear();
-            redoStack.Clear();
-            NotifyUndoRedoState();
-            selectedShape = null;
-            Redraw();
-            OnLayersChanged?.Invoke();
-        }
-
-        public void ResizeCanvas(int width, int height)
-        {
-            if (width > 0 && height > 0)
-            {
-                SaveUndoState();
-                Renderer?.Dispose();
-                Renderer = new Rasterizer(width, height);
-                // Antes solo se recreaba el Rasterizer (bitmap) pero el PictureBox
-                // conservaba su tamaño anterior, quedando el lienzo visual desincronizado.
-                CanvasView.Width = (int)(width * ZoomFactor);
-                CanvasView.Height = (int)(height * ZoomFactor);
-                CanvasView.SizeMode = PictureBoxSizeMode.StretchImage;
-                Redraw();
-            }
-        }
-
-        public Size GetCanvasSize() => new Size(Renderer.Canvas.Width, Renderer.Canvas.Height);
-
-        public void SetZoom(double zoom)
-        {
-            if (zoom <= 0) return;
-            ZoomFactor = zoom;
-            CanvasView.Width = (int)(Renderer.Canvas.Width * zoom);
-            CanvasView.Height = (int)(Renderer.Canvas.Height * zoom);
-            CanvasView.SizeMode = PictureBoxSizeMode.StretchImage;
         }
     }
 }

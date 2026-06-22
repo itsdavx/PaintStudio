@@ -6,6 +6,7 @@ namespace PaintStudio.Utils
 {
     public static class GeometryUtils
     {
+        // -------------------- VERIFICAR POLÍGONO --------------------
         public static bool PolygonContains(List<PointD> poly, PointD p)
         {
             bool result = false;
@@ -24,6 +25,7 @@ namespace PaintStudio.Utils
             return result;
         }
 
+        // -------------------- DISTANCIA A SEGMENTO --------------------
         public static double DistanceToSegment(PointD p, PointD v, PointD w)
         {
             double l2 = Math.Pow(v.X - w.X, 2) + Math.Pow(v.Y - w.Y, 2);
@@ -33,6 +35,7 @@ namespace PaintStudio.Utils
             return Math.Sqrt(Math.Pow(p.X - proj.X, 2) + Math.Pow(p.Y - proj.Y, 2));
         }
 
+        // -------------------- VERIFICAR TRAYECTORIA --------------------
         public static bool PathContains(List<PointD> path, PointD p, double tolerance)
         {
             for (int i = 0; i < path.Count - 1; i++)
