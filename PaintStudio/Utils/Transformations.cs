@@ -2,11 +2,9 @@ using System;
 
 namespace PaintStudio.Utils
 {
-    /// <summary>
-    /// Utilidades para transformaciones geométricas utilizando matrices 2D (coordenadas homogéneas 3x3).
-    /// </summary>
     public static class Transformations
     {
+        // -------------------- MATRIZ DE TRASLACIÓN --------------------
         public static double[,] GetTranslationMatrix(double dx, double dy)
         {
             return new double[,] {
@@ -16,16 +14,12 @@ namespace PaintStudio.Utils
             };
         }
 
+        // -------------------- MATRIZ DE ROTACIÓN --------------------
         public static double[,] GetRotationMatrix(double angleDegrees, double cx, double cy)
         {
             double angleRad = angleDegrees * Math.PI / 180.0;
             double cos = Math.Cos(angleRad);
             double sin = Math.Sin(angleRad);
-
-            // Matriz para trasladar al origen, rotar, y trasladar de vuelta
-            // [ 1  0  cx ] [ cos -sin 0 ] [ 1  0 -cx ]
-            // [ 0  1  cy ] [ sin  cos 0 ] [ 0  1 -cy ]
-            // [ 0  0  1  ] [  0    0  1 ] [ 0  0  1  ]
 
             return new double[,] {
                 { cos, -sin, -cx * cos + cy * sin + cx },
@@ -34,6 +28,7 @@ namespace PaintStudio.Utils
             };
         }
 
+        // -------------------- MATRIZ DE ESCALADO --------------------
         public static double[,] GetScaleMatrix(double sx, double sy, double cx, double cy)
         {
             return new double[,] {

@@ -7,8 +7,10 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class AirbrushShape : Shape
     {
+        // -------------------- CAMPOS --------------------
         private Random rnd = new Random();
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public void AddPoint(PointD p)
         {
             Vertices.Add(p);
@@ -17,8 +19,8 @@ namespace PaintStudio.Models
         public override void Draw(Rasterizer rasterizer)
         {
             Color c = Selected ? Color.Red : LineColor;
-            int radius = Thickness * 2; // Aerógrafo más esparcido que el grosor normal
-            int density = Thickness * 5; // Puntos por pasada
+            int radius = Thickness * 2;
+            int density = Thickness * 5;
 
             foreach (var p in Vertices)
             {
@@ -27,7 +29,6 @@ namespace PaintStudio.Models
 
                 for (int i = 0; i < density; i++)
                 {
-                    // Distribución aleatoria circular
                     double angle = rnd.NextDouble() * Math.PI * 2;
                     double r = rnd.NextDouble() * radius;
 

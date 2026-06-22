@@ -12,11 +12,13 @@ namespace PaintStudio.Controllers
 
     public class SelectionManager
     {
+        // -------------------- CAMPOS --------------------
         public const int HandleSize = 8;
         private static readonly Color BoxColor = Color.DodgerBlue;
         private static readonly Color HandleFill = Color.White;
         private static readonly Color HandleBorder = Color.DodgerBlue;
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public Dictionary<ShapeHandle, RectangleF> GetHandleRects(RectangleF b)
         {
             float h = HandleSize / 2f;
@@ -56,11 +58,6 @@ namespace PaintStudio.Controllers
             }
         }
 
-        private RectangleF ScaleRect(RectangleF r, double zoom)
-        {
-            return new RectangleF((float)(r.X * zoom), (float)(r.Y * zoom), (float)(r.Width * zoom), (float)(r.Height * zoom));
-        }
-
         public ShapeHandle HitTestHandles(Shape shape, double zoom, Point screenPoint)
         {
             if (shape == null) return ShapeHandle.None;
@@ -70,6 +67,12 @@ namespace PaintStudio.Controllers
                 if (RectangleF.Inflate(kv.Value, 3, 3).Contains(screenPoint)) return kv.Key;
             }
             return ShapeHandle.None;
+        }
+
+        // -------------------- MÉTODOS PRIVADOS --------------------
+        private RectangleF ScaleRect(RectangleF r, double zoom)
+        {
+            return new RectangleF((float)(r.X * zoom), (float)(r.Y * zoom), (float)(r.Width * zoom), (float)(r.Height * zoom));
         }
     }
 }

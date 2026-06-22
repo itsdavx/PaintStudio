@@ -7,21 +7,22 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class DiamondShape : Shape
     {
+        // -------------------- CONSTRUCTOR --------------------
         public DiamondShape(PointD p1, PointD p2)
         {
             UpdateVertices(p1, p2);
         }
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public void UpdateVertices(PointD p1, PointD p2)
         {
             Vertices.Clear();
-            // Rombo dentro del bounding box
             double mx = (p1.X + p2.X) / 2.0;
             double my = (p1.Y + p2.Y) / 2.0;
-            Vertices.Add(new PointD(mx, p1.Y)); // Arriba
-            Vertices.Add(new PointD(p2.X, my)); // Derecha
-            Vertices.Add(new PointD(mx, p2.Y)); // Abajo
-            Vertices.Add(new PointD(p1.X, my)); // Izquierda
+            Vertices.Add(new PointD(mx, p1.Y));
+            Vertices.Add(new PointD(p2.X, my));
+            Vertices.Add(new PointD(mx, p2.Y));
+            Vertices.Add(new PointD(p1.X, my));
         }
 
         public override void Draw(Rasterizer rasterizer)
@@ -30,9 +31,7 @@ namespace PaintStudio.Models
             Color c = Selected ? Color.Red : LineColor;
 
             if (IsFilled)
-            {
                 rasterizer.FillPolygon(Vertices, FillColor);
-            }
 
             for (int i = 0; i < 4; i++)
             {
@@ -48,7 +47,8 @@ namespace PaintStudio.Models
             if (Vertices.Count < 4) return false;
             if (IsFilled && GeometryUtils.PolygonContains(Vertices, p)) return true;
             for (int i = 0; i < 4; i++)
-                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i + 1) % 4]) <= Math.Max(Thickness, 5)) return true;
+                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i + 1) % 4]) <= Math.Max(Thickness, 5))
+                    return true;
             return false;
         }
     }

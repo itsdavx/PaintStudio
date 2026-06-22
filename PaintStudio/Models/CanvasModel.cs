@@ -6,13 +6,16 @@ namespace PaintStudio.Models
 {
     public class CanvasModel
     {
+        // -------------------- CAMPOS --------------------
         public List<Shape> Shapes { get; private set; }
 
+        // -------------------- CONSTRUCTOR --------------------
         public CanvasModel()
         {
             Shapes = new List<Shape>();
         }
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public void AddShape(Shape shape)
         {
             Shapes.Add(shape);
@@ -28,9 +31,7 @@ namespace PaintStudio.Models
             var sorted = new List<int>(indices);
             sorted.Sort();
             for (int i = sorted.Count - 1; i >= 0; i--)
-            {
                 RemoveShapeAt(sorted[i]);
-            }
         }
 
         public void RemoveShape(Shape shape)
@@ -46,9 +47,7 @@ namespace PaintStudio.Models
         public void RemoveShapeAt(int index)
         {
             if (index >= 0 && index < Shapes.Count)
-            {
                 Shapes.RemoveAt(index);
-            }
         }
 
         public void SaveToFile(string path)

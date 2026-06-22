@@ -7,11 +7,13 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class StarShape : Shape
     {
+        // -------------------- CONSTRUCTOR --------------------
         public StarShape(PointD p1, PointD p2)
         {
             UpdateVertices(p1, p2);
         }
 
+        // -------------------- ACTUALIZAR VÉRTICES --------------------
         public void UpdateVertices(PointD p1, PointD p2)
         {
             Vertices.Clear();
@@ -30,6 +32,7 @@ namespace PaintStudio.Models
             }
         }
 
+        // -------------------- DIBUJAR ESTRELLA --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count < 10) return;
@@ -38,19 +41,19 @@ namespace PaintStudio.Models
             {
                 var v1 = Vertices[i];
                 var v2 = Vertices[(i + 1) % 10];
-                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y), 
+                rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y),
                                     (int)Math.Round(v2.X), (int)Math.Round(v2.Y), c, Thickness);
             }
         }
 
+        // -------------------- VERIFICAR COLISIÓN --------------------
         public override bool ContainsPoint(PointD p)
         {
             if (Vertices.Count < 10) return false;
             if (IsFilled && GeometryUtils.PolygonContains(Vertices, p)) return true;
             for (int i = 0; i < 10; i++)
-                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i+1)%10]) <= Math.Max(Thickness, 5)) return true;
+                if (GeometryUtils.DistanceToSegment(p, Vertices[i], Vertices[(i + 1) % 10]) <= Math.Max(Thickness, 5)) return true;
             return false;
         }
     }
 }
-

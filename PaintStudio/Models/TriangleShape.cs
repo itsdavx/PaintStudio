@@ -7,11 +7,13 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class TriangleShape : Shape
     {
+        // -------------------- CONSTRUCTOR --------------------
         public TriangleShape(PointD p1, PointD p2)
         {
             UpdateVertices(p1, p2);
         }
 
+        // -------------------- ACTUALIZAR VÉRTICES --------------------
         public void UpdateVertices(PointD p1, PointD p2)
         {
             Vertices.Clear();
@@ -21,6 +23,7 @@ namespace PaintStudio.Models
             Vertices.Add(new PointD(p2.X, p2.Y)); // Esquina inferior derecha
         }
 
+        // -------------------- DIBUJAR TRIÁNGULO --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count < 3) return;
@@ -40,6 +43,7 @@ namespace PaintStudio.Models
             }
         }
 
+        // -------------------- VERIFICAR COLISIÓN --------------------
         public override bool ContainsPoint(PointD p)
         {
             if (Vertices.Count < 3) return false;

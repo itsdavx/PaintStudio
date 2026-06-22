@@ -8,18 +8,14 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class BezierShape : Shape
     {
+        // -------------------- PROPIEDADES --------------------
         public int ControlPointsCount => Vertices.Count;
 
-        public BezierShape()
-        {
-        }
-
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public void AddControlPoint(PointD p)
         {
             if (Vertices.Count < 4)
-            {
                 Vertices.Add(p);
-            }
         }
 
         public override void Draw(Rasterizer rasterizer)
@@ -34,7 +30,6 @@ namespace PaintStudio.Models
                 return;
             }
 
-            // Algoritmo de Bézier Cúbica o Cuadrática
             double step = 0.01;
             PointD prevPoint = Vertices[0];
 
@@ -47,10 +42,25 @@ namespace PaintStudio.Models
             }
         }
 
+        public override bool ContainsPoint(PointD p)
+        {
+            if (Vertices.Count < 2) return false;
+            double step = 0.05;
+            PointD prevPoint = Vertices[0];
+            for (double t = step; t <= 1.0; t += step)
+            {
+                PointD curr = CalculateBezierPoint(t);
+                if (GeometryUtils.DistanceToSegment(p, prevPoint, curr) <= Math.Max(Thickness, 5)) return true;
+                prevPoint = curr;
+            }
+            return false;
+        }
+
+        // -------------------- MÉTODOS PRIVADOS --------------------
         private PointD CalculateBezierPoint(double t)
         {
             double u = 1 - t;
-            if (Vertices.Count == 3) // Cuadrática
+            if (Vertices.Count == 3)
             {
                 double tt = t * t;
                 double uu = u * u;
@@ -58,7 +68,7 @@ namespace PaintStudio.Models
                 double y = uu * Vertices[0].Y + 2 * u * t * Vertices[1].Y + tt * Vertices[2].Y;
                 return new PointD(x, y);
             }
-            else // Cúbica
+            else
             {
                 double tt = t * t;
                 double uu = u * u;
@@ -69,21 +79,6 @@ namespace PaintStudio.Models
                 double y = uuu * Vertices[0].Y + 3 * uu * t * Vertices[1].Y + 3 * u * tt * Vertices[2].Y + ttt * Vertices[3].Y;
                 return new PointD(x, y);
             }
-        }
-
-        public override bool ContainsPoint(PointD p)
-        {
-            if (Vertices.Count < 2) return false;
-            // Aproximación midiendo la curva
-            double step = 0.05;
-            PointD prevPoint = Vertices[0];
-            for (double t = step; t <= 1.0; t += step)
-            {
-                PointD curr = CalculateBezierPoint(t);
-                if (GeometryUtils.DistanceToSegment(p, prevPoint, curr) <= Math.Max(Thickness, 5)) return true;
-                prevPoint = curr;
-            }
-            return false;
         }
     }
 }

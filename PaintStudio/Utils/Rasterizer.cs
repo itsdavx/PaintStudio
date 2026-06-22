@@ -5,17 +5,14 @@ using System.Drawing.Imaging;
 
 namespace PaintStudio.Utils
 {
-    /// <summary>
-    /// Motor de rasterización propio. Se encarga de dibujar primitivas directamente
-    /// sobre un Bitmap utilizando punteros (unsafe) o LockBits para alto rendimiento.
-    /// Implementa algoritmos clásicos de computación gráfica.
-    /// </summary>
     public class Rasterizer : IDisposable
     {
+        // -------------------- PROPIEDADES --------------------
         public Bitmap Canvas { get; private set; }
         private int Width;
         private int Height;
 
+        // -------------------- CONSTRUCTOR --------------------
         public Rasterizer(int width, int height)
         {
             Width = width;
@@ -24,6 +21,7 @@ namespace PaintStudio.Utils
             Clear(Color.White);
         }
 
+        // -------------------- LIMPIAR LIENZO --------------------
         public void Clear(Color color)
         {
             using (Graphics g = Graphics.FromImage(Canvas))
@@ -32,11 +30,7 @@ namespace PaintStudio.Utils
             }
         }
 
-        /// <summary>
-        /// Dibuja un píxel seguro comprobando los límites.
-        /// (Nota: Para un motor real se usaría LockBits y punteros, pero SetPixel 
-        ///  está bien encapsulado aquí, se puede optimizar después si hay lentitud).
-        /// </summary>
+        // -------------------- DIBUJAR PÍXEL --------------------
         public void SetPixel(int x, int y, Color c)
         {
             if (x >= 0 && x < Width && y >= 0 && y < Height)
@@ -45,6 +39,7 @@ namespace PaintStudio.Utils
             }
         }
 
+        // -------------------- DIBUJAR PÍXEL CON GROSOR --------------------
         private void SetBrushPixel(int x, int y, Color c, int thickness)
         {
             if (thickness <= 1)
@@ -66,9 +61,7 @@ namespace PaintStudio.Utils
             }
         }
 
-        /// <summary>
-        /// Algoritmo de Bresenham para dibujar líneas
-        /// </summary>
+        // -------------------- DIBUJAR LÍNEA --------------------
         public void DrawLine(int x0, int y0, int x1, int y1, Color c, int thickness = 1)
         {
             int dx = Math.Abs(x1 - x0);
@@ -96,9 +89,7 @@ namespace PaintStudio.Utils
             }
         }
 
-        /// <summary>
-        /// Algoritmo de punto medio / Bresenham para circunferencias
-        /// </summary>
+        // -------------------- DIBUJAR CÍRCULO --------------------
         public void DrawCircle(int xc, int yc, int r, Color c, int thickness = 1)
         {
             int x = 0;
@@ -122,6 +113,7 @@ namespace PaintStudio.Utils
             }
         }
 
+        // -------------------- DIBUJAR PUNTOS DE CÍRCULO --------------------
         private void DrawCirclePoints(int xc, int yc, int x, int y, Color c, int thickness)
         {
             SetBrushPixel(xc + x, yc + y, c, thickness);
@@ -134,12 +126,7 @@ namespace PaintStudio.Utils
             SetBrushPixel(xc - y, yc - x, c, thickness);
         }
 
-        /// <summary>
-        /// Algoritmo de relleno de polígonos por barrido de líneas (Scanline Fill).
-        /// Es el método estándar y más eficiente para rellenar figuras cerradas definidas
-        /// por una lista de vértices (regla par-impar / even-odd rule).
-        /// Complejidad O(alto * aristas), muy superior a un FloodFill por píxel para este caso.
-        /// </summary>
+        // -------------------- RELLENAR POLÍGONO --------------------
         public void FillPolygon(System.Collections.Generic.List<PaintStudio.Models.PointD> vertices, Color c)
         {
             if (vertices.Count < 3) return;
@@ -167,9 +154,8 @@ namespace PaintStudio.Utils
                     var v2 = vertices[(i + 1) % n];
                     double y1 = v1.Y, y2 = v2.Y;
 
-                    if (y1 == y2) continue; // Arista horizontal, se ignora
+                    if (y1 == y2) continue;
 
-                    // ¿La línea de barrido "y" cruza esta arista?
                     if (y >= Math.Min(y1, y2) && y < Math.Max(y1, y2))
                     {
                         double t = (y - y1) / (y2 - y1);
@@ -180,7 +166,6 @@ namespace PaintStudio.Utils
 
                 xIntersections.Sort();
 
-                // Se pintan los tramos entre pares consecutivos de intersecciones
                 for (int i = 0; i + 1 < xIntersections.Count; i += 2)
                 {
                     int xStart = (int)Math.Round(xIntersections[i]);
@@ -193,10 +178,7 @@ namespace PaintStudio.Utils
             }
         }
 
-        /// <summary>
-        /// Relleno de círculo recorriendo filas horizontales dentro del radio (muy eficiente,
-        /// evita el costo de generar el polígono aproximado del círculo).
-        /// </summary>
+        // -------------------- RELLENAR CÍRCULO --------------------
         public void FillCircle(int xc, int yc, int r, Color c)
         {
             if (r <= 0) return;
@@ -211,9 +193,7 @@ namespace PaintStudio.Utils
             }
         }
 
-        /// <summary>
-        /// Algoritmo de relleno FloodFill usando una pila (iterativo) para evitar StackOverflow
-        /// </summary>
+        // -------------------- RELLENO POR INUNDACIÓN --------------------
         public void FloodFill(int x, int y, Color replacementColor)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height) return;
@@ -224,7 +204,6 @@ namespace PaintStudio.Utils
             Stack<Point> pixels = new Stack<Point>();
             pixels.Push(new Point(x, y));
 
-            // Optimización con LockBits para FloodFill
             BitmapData data = Canvas.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             int stride = data.Stride;
 
@@ -261,6 +240,7 @@ namespace PaintStudio.Utils
             Canvas.UnlockBits(data);
         }
 
+        // -------------------- LIBERAR RECURSOS --------------------
         public void Dispose()
         {
             Canvas?.Dispose();

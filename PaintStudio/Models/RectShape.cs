@@ -7,6 +7,7 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class RectShape : Shape
     {
+        // -------------------- CONSTRUCTOR --------------------
         public RectShape(PointD p1, PointD p2)
         {
             // Almacenamos los 4 vértices para permitir rotación matemática posterior
@@ -16,6 +17,7 @@ namespace PaintStudio.Models
             Vertices.Add(new PointD(p1.X, p2.Y));
         }
 
+        // -------------------- DIBUJAR RECTÁNGULO --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count < 4) return;
@@ -35,6 +37,7 @@ namespace PaintStudio.Models
             }
         }
 
+        // -------------------- VERIFICAR COLISIÓN --------------------
         public override bool ContainsPoint(PointD p)
         {
             if (Vertices.Count < 4) return false;

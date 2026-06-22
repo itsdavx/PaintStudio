@@ -5,10 +5,12 @@ using System.Windows.Forms;
 using Guna.UI2.WinForms;
 using PaintStudio.Controllers;
 using PaintStudio.Models;
+
 namespace PaintStudio
 {
     public partial class FrmHome : Form
     {
+        // -------------------- CAMPOS PRIVADOS --------------------
         private PaintController controller;
         private NumericUpDown numRot, numScale, numTransX, numTransY;
         private Button btnColor;
@@ -16,6 +18,7 @@ namespace PaintStudio
         private CheckBox chkFillEnabled;
         private NumericUpDown numThickness;
         private ToolTip toolTip1;
+
         private static readonly Dictionary<string, string> ToolTipTexts = new Dictionary<string, string>
         {
             ["select"] = "Seleccionar objetos",
@@ -34,6 +37,7 @@ namespace PaintStudio
             ["undo"] = "Deshacer (Ctrl+Z)",
             ["redo"] = "Rehacer (Ctrl+Y)"
         };
+
         private static readonly Color ColorBackground = ColorTranslator.FromHtml("#121212");
         private static readonly Color ColorSurface = ColorTranslator.FromHtml("#1E1E1E");
         private static readonly Color ColorCard = ColorTranslator.FromHtml("#252526");
@@ -44,10 +48,9 @@ namespace PaintStudio
         private static readonly Color ColorTextSecondary = ColorTranslator.FromHtml("#A0A0A0");
 
         private List<Guna2Button> sidebarToolButtons = new List<Guna2Button>();
-
         private const int CardRadius = 16;
 
-        // --- Redimensionado del lienzo con mouse (estilo Paint) ---
+        // -------------------- CAMPOS DE REDIMENSIONADO --------------------
         private enum ResizeHandle { None, Right, Bottom, Corner }
         private const int HandleSize = 7;
         private bool isResizingCanvas = false;
@@ -56,11 +59,14 @@ namespace PaintStudio
         private Size resizeStartCanvasSize;
         private Size previewCanvasSize;
 
+        // -------------------- CONSTRUCTOR --------------------
         public FrmHome()
         {
             InitializeComponent();
             this.Load += Form1_Load;
         }
+
+        // -------------------- INICIALIZACIÓN --------------------
         private void Form1_Load(object sender, EventArgs e)
         {
             ApplyDarkTitleBar();
@@ -72,7 +78,6 @@ namespace PaintStudio
                 btnRedo.Enabled = canRedo;
             };
 
-            // Ventana responsiva / maximizable
             this.MinimumSize = new Size(900, 600);
             this.MaximizeBox = true;
             this.WindowState = FormWindowState.Maximized;
@@ -86,19 +91,19 @@ namespace PaintStudio
                 BackColor = ColorCard,
                 ForeColor = Color.White
             };
-            // Construcción de paneles nuevos (Fase 1)
+
+            // -------------------- CONSTRUCCIÓN DE PANELES --------------------
             BuildSidebar();
             BuildCanvasSizeCard();
             BuildColorAndThickness();
             BuildTransformsPanel();
             BuildLayersHeader();
 
-            // Sincroniza el numeric de tamaño de lienzo con el tamaño real inicial
             var size0 = controller.GetCanvasSize();
             numCanvasWidth.Value = size0.Width;
             numCanvasHeight.Value = size0.Height;
 
-            // Text tool
+            // -------------------- EVENTOS DE TEXTO --------------------
             controller.OnRequestTextInput = (p) => {
                 string input = Prompt.ShowDialog("Ingrese el texto:", "Texto");
                 if (!string.IsNullOrEmpty(input))
@@ -106,7 +111,8 @@ namespace PaintStudio
                     controller.AddTextShape(new PaintStudio.Models.PointD(p.X, p.Y), input, new Font("Segoe UI", 12));
                 }
             };
-            // Keyboard delete / undo / redo shortcuts
+
+            // -------------------- TECLADO --------------------
             this.KeyPreview = true;
             this.KeyDown += (s, args) => {
                 if (args.KeyCode == Keys.Delete && lstLayers.SelectedIndices.Count > 0)
@@ -127,12 +133,14 @@ namespace PaintStudio
                     controller.Redo();
                 }
             };
-            // Color picker
+
+            // -------------------- COLOR PICKER --------------------
             controller.OnColorPicked = (c) => {
                 if (btnColor != null) btnColor.BackColor = c;
                 controller.CurrentColor = c;
             };
-            // Multi-selección de capas
+
+            // -------------------- CAPAS --------------------
             lstLayers.SelectionMode = SelectionMode.MultiExtended;
             lstLayers.SelectedIndexChanged += (s, args) => {
                 if (controller != null && lstLayers.SelectedIndex >= 0)
@@ -141,6 +149,8 @@ namespace PaintStudio
                     controller.SelectShapeIndex(realIndex);
                 }
             };
+
+            // -------------------- ASIGNACIÓN DE EVENTOS --------------------
             AssignMenuEvents();
             AssignCanvasResizeEvents();
             AssignZoomEvents();
@@ -150,16 +160,13 @@ namespace PaintStudio
             btnUndo.Enabled = false;
             btnRedo.Enabled = false;
 
-            // Posiciona el lienzo centrado por primera vez
             CenterCanvas();
             ApplyRoundedPanels();
             SetupFloatingShells();
             SetupStatusBar();
         }
 
-        // ==================================================================
-        // SIDEBAR IZQUIERDO — iconos vectoriales por categoría (Fase 1)
-        // ==================================================================
+        // -------------------- SIDEBAR IZQUIERDO --------------------
         private void BuildSidebar()
         {
             pnlSidebarCard.Controls.Clear();
@@ -203,8 +210,6 @@ namespace PaintStudio
             y += 44;
 
             pnlSidebarCard.Height = y + 10;
-
-            // Estado inicial: Selección activa
             SetActiveSidebarButton(btnSelect);
         }
 
@@ -262,16 +267,13 @@ namespace PaintStudio
                 b.Invalidate();
         }
 
-        // ==================================================================
-        // CARD "LIENZO" — ancho / alto / zoom (antes en toolStrip1)
-        // ==================================================================
+        // -------------------- PANEL LIENZO --------------------
         private void BuildCanvasSizeCard()
         {
             pnlCanvasSizeCard.Controls.Clear();
 
             var title = new Label { Text = "Lienzo", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ColorAccent, BackColor = Color.Transparent, Location = new Point(12, 10), AutoSize = true };
             pnlCanvasSizeCard.Controls.Add(title);
-            
 
             pnlCanvasSizeCard.Controls.Add(FieldLabel("Ancho", 12, 38));
             numCanvasWidth = new NumericUpDown { Location = new Point(12, 56), Width = 90, Minimum = 20, Maximum = 10000, Value = 800, BackColor = ColorCard, ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
@@ -291,7 +293,7 @@ namespace PaintStudio
             btnResizeCanvas = new Guna2Button { Text = "Aplicar", Location = new Point(112, 104), Size = new Size(90, 28), BorderRadius = 8, FillColor = ColorAccent, ForeColor = Color.White, Font = new Font("Segoe UI", 8.5F) };
             btnResizeCanvas.HoverState.FillColor = ColorSelected;
             pnlCanvasSizeCard.Controls.Add(btnResizeCanvas);
-toolTip1.SetToolTip(btnResizeCanvas, "Aplicar nuevo tamaño de lienzo");
+            toolTip1.SetToolTip(btnResizeCanvas, "Aplicar nuevo tamaño de lienzo");
             pnlCanvasSizeCard.Height = 144;
         }
 
@@ -300,9 +302,7 @@ toolTip1.SetToolTip(btnResizeCanvas, "Aplicar nuevo tamaño de lienzo");
             return new Label { Text = text, Location = new Point(x, y), AutoSize = true, ForeColor = ColorTextSecondary, BackColor = Color.Transparent, Font = new Font("Segoe UI", 8F) };
         }
 
-        // ==================================================================
-        // CARD "PROPIEDADES" — color línea / relleno / grosor (estático, Fase 1)
-        // ==================================================================
+        // -------------------- PANEL PROPIEDADES --------------------
         private void BuildColorAndThickness()
         {
             pnlPropertiesCard.Controls.Clear();
@@ -311,7 +311,7 @@ toolTip1.SetToolTip(btnResizeCanvas, "Aplicar nuevo tamaño de lienzo");
             pnlPropertiesCard.Controls.Add(title);
 
             pnlPropertiesCard.Controls.Add(FieldLabel("Línea", 12, 40));
-            
+
             btnColor = new Button { BackColor = Color.Black, Size = new Size(22, 22), Location = new Point(70, 36), FlatStyle = FlatStyle.Flat };
             btnColor.FlatAppearance.BorderColor = ColorAccent;
             btnColor.FlatAppearance.BorderSize = 1;
@@ -323,7 +323,8 @@ toolTip1.SetToolTip(btnResizeCanvas, "Aplicar nuevo tamaño de lienzo");
                 }
             };
             pnlPropertiesCard.Controls.Add(btnColor);
-toolTip1.SetToolTip(btnColor, "Color de línea");
+            toolTip1.SetToolTip(btnColor, "Color de línea");
+
             pnlPropertiesCard.Controls.Add(FieldLabel("Relleno", 110, 40));
             btnFillColorBtn = new Button { BackColor = Color.White, Size = new Size(22, 22), Location = new Point(168, 36), FlatStyle = FlatStyle.Flat };
             btnFillColorBtn.FlatAppearance.BorderColor = ColorAccent;
@@ -351,45 +352,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             pnlPropertiesCard.Height = 150;
         }
 
-        // ==================================================================
-        // Header de "Capas" con botón de borrar
-        // ==================================================================
-        private void BuildLayersHeader()
-        {
-            btnDeleteLayer = new Guna2Button
-            {
-                Size = new Size(24, 24),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                BorderRadius = 6,
-                FillColor = ColorCard,
-                ForeColor = Color.White,
-                Text = "",
-                Cursor = Cursors.Hand
-            };
-            btnDeleteLayer.Location = new Point(Math.Max(0, lblLayersTitle.Width - btnDeleteLayer.Width - 8), 2);
-            btnDeleteLayer.HoverState.FillColor = ColorTranslator.FromHtml("#A32D2D");
-            btnDeleteLayer.Paint += (s, e) => ToolIcons.Draw(e.Graphics, btnDeleteLayer.ClientRectangle, "trash", Color.White);
-            lblLayersTitle.Controls.Add(btnDeleteLayer);
-            toolTip1.SetToolTip(btnDeleteLayer, "Eliminar capa(s) seleccionada(s)");
-            toolTip1.SetToolTip(lblLayersTitle, "Administración de capas");
-            toolTip1.SetToolTip(lstLayers, "Lista de capas del lienzo");
-        }
-
-        // ==================================================================
-        // STATUS BAR
-        // ==================================================================
-        private void SetupStatusBar()
-        {
-            var size0 = controller.GetCanvasSize();
-            lblStatusCanvas.Text = $"{size0.Width} x {size0.Height} px";
-            lblStatusZoom.Text = $"Zoom: {numZoom.Value}%";
-            lblStatusTool.Text = "Herramienta: Selección";
-            lblStatusCoords.Text = "X: 0  Y: 0";
-
-            canvasPicBox.MouseMove += (s, e) => { lblStatusCoords.Text = $"X: {e.X}  Y: {e.Y}"; };
-            numZoom.ValueChanged += (s, e) => { lblStatusZoom.Text = $"Zoom: {numZoom.Value}%"; };
-        }
-
+        // -------------------- PANEL TRANSFORMACIONES --------------------
         private void BuildTransformsPanel()
         {
             pnlTransforms.Controls.Clear();
@@ -430,6 +393,42 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             toolTip1.SetToolTip(btnApply, "Aplicar transformaciones a la capa seleccionada");
         }
 
+        // -------------------- CAPAS --------------------
+        private void BuildLayersHeader()
+        {
+            btnDeleteLayer = new Guna2Button
+            {
+                Size = new Size(24, 24),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BorderRadius = 6,
+                FillColor = ColorCard,
+                ForeColor = Color.White,
+                Text = "",
+                Cursor = Cursors.Hand
+            };
+            btnDeleteLayer.Location = new Point(Math.Max(0, lblLayersTitle.Width - btnDeleteLayer.Width - 8), 2);
+            btnDeleteLayer.HoverState.FillColor = ColorTranslator.FromHtml("#A32D2D");
+            btnDeleteLayer.Paint += (s, e) => ToolIcons.Draw(e.Graphics, btnDeleteLayer.ClientRectangle, "trash", Color.White);
+            lblLayersTitle.Controls.Add(btnDeleteLayer);
+            toolTip1.SetToolTip(btnDeleteLayer, "Eliminar capa(s) seleccionada(s)");
+            toolTip1.SetToolTip(lblLayersTitle, "Administración de capas");
+            toolTip1.SetToolTip(lstLayers, "Lista de capas del lienzo");
+        }
+
+        // -------------------- STATUS BAR --------------------
+        private void SetupStatusBar()
+        {
+            var size0 = controller.GetCanvasSize();
+            lblStatusCanvas.Text = $"{size0.Width} x {size0.Height} px";
+            lblStatusZoom.Text = $"Zoom: {numZoom.Value}%";
+            lblStatusTool.Text = "Herramienta: Selección";
+            lblStatusCoords.Text = "X: 0  Y: 0";
+
+            canvasPicBox.MouseMove += (s, e) => { lblStatusCoords.Text = $"X: {e.X}  Y: {e.Y}"; };
+            numZoom.ValueChanged += (s, e) => { lblStatusZoom.Text = $"Zoom: {numZoom.Value}%"; };
+        }
+
+        // -------------------- EVENTOS DE MENÚ --------------------
         private void AssignMenuEvents()
         {
             nuevoToolStripMenuItem.Click += (s, e) => {
@@ -463,6 +462,8 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
                 }
             };
         }
+
+        // -------------------- EVENTOS DE LIENZO --------------------
         private void AssignCanvasResizeEvents()
         {
             btnResizeCanvas.Click += (s, e) => {
@@ -472,6 +473,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
                 lblStatusCanvas.Text = $"{(int)numCanvasWidth.Value} x {(int)numCanvasHeight.Value} px";
             };
         }
+
         private void AssignZoomEvents()
         {
             numZoom.ValueChanged += (s, e) => {
@@ -480,10 +482,12 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
                 pnlCenter.Invalidate();
             };
         }
+
         private void AssignDeleteLayersButton()
         {
             btnDeleteLayer.Click += (s, e) => DeleteSelectedLayers();
         }
+
         private void DeleteSelectedLayers()
         {
             if (lstLayers.SelectedIndices.Count == 0) return;
@@ -495,6 +499,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             }
             controller.RemoveShapesAt(realIndices);
         }
+
         private void UpdateLayersList()
         {
             int prevIndex = lstLayers.SelectedIndex;
@@ -507,6 +512,8 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             if (prevIndex >= 0 && prevIndex < lstLayers.Items.Count)
                 lstLayers.SelectedIndex = prevIndex;
         }
+
+        // -------------------- APLICAR TRANSFORMACIÓN --------------------
         private void BtnApplyTransform_Click(object sender, EventArgs e)
         {
             int index = lstLayers.SelectedIndex;
@@ -515,7 +522,6 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
                 MessageBox.Show("Seleccione una capa primero.");
                 return;
             }
-            // Debido a que invertimos el orden visual, el índice real es:
             int realIndex = (controller.GetShapes().Count - 1) - index;
             var shapes = controller.GetShapes();
             var shape = shapes[realIndex];
@@ -527,7 +533,6 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
 
             if (angle == 0 && scale == 1.0 && tx == 0 && ty == 0) return;
 
-            // Se guarda un único snapshot de Undo para todo el conjunto de transformaciones aplicadas
             controller.SaveUndoState();
 
             if (angle != 0) shape.ApplyTransformation(PaintStudio.Utils.Transformations.GetRotationMatrix(angle, c.X, c.Y));
@@ -537,14 +542,10 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             numScale.Value = 100;
             numTransX.Value = 0;
             numTransY.Value = 0;
-            // Forzar el re-dibujo inmediato usando el controlador (más fiable que solo Invalidate)
             controller.Redraw();
         }
 
-        // ==================================================================
-        // Centrado del lienzo en el área de trabajo + redimensionado con mouse
-        // (estilo Paint: manijas en el borde derecho, inferior y esquina)
-        // ==================================================================
+        // -------------------- CENTRADO DE LIENZO --------------------
         private void AssignCanvasAreaEvents()
         {
             canvasPicBox.Paint += CanvasPicBox_Paint;
@@ -568,6 +569,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             }
         }
 
+        // -------------------- MANEJADORES DE REDIMENSIONADO --------------------
         private Dictionary<ResizeHandle, Rectangle> GetHandleRects()
         {
             var b = canvasPicBox.Bounds;
@@ -579,13 +581,14 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             };
             return dict;
         }
+
         private void CanvasPicBox_Paint(object sender, PaintEventArgs e)
         {
             controller.Selection.Draw(e.Graphics, controller.SelectedShape, controller.ZoomFactor);
         }
+
         private void PnlCenter_Paint(object sender, PaintEventArgs e)
         {
-            // Resalte del lienzo: sombra + borde sutil contra el fondo oscuro
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             var canvasRect = canvasPicBox.Bounds;
             using (var shadowPen = new Pen(Color.FromArgb(60, 0, 0, 0), 6))
@@ -657,7 +660,6 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
                 return;
             }
 
-            // Retroalimentación visual: cambia el cursor al pasar sobre una manija
             var handles = GetHandleRects();
             if (handles[ResizeHandle.Corner].Contains(e.Location)) pnlCenter.Cursor = Cursors.SizeNWSE;
             else if (handles[ResizeHandle.Right].Contains(e.Location)) pnlCenter.Cursor = Cursors.SizeWE;
@@ -688,9 +690,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             return d;
         }
 
-        // ==================================================================
-        // Cards flotantes: esquinas redondeadas + sombra simulada
-        // ==================================================================
+        // -------------------- ESTILOS VISUALES --------------------
         private void ApplyRoundedPanels()
         {
             void RoundCorners(Control p, int radius)
@@ -744,6 +744,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             AttachShadow(pnlRightShell, pnlRight);
         }
 
+        // -------------------- BARRA DE TÍTULO OSCURA --------------------
         [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
         private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
@@ -755,9 +756,10 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
                 int useDark = 1;
                 DwmSetWindowAttribute(this.Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref useDark, sizeof(int));
             }
-            catch { /* No-op en Windows < 10 1809 */ }
+            catch { }
         }
 
+        // -------------------- CLASES INTERNAS --------------------
         internal class DarkToolStripColorTable : System.Windows.Forms.ProfessionalColorTable
         {
             private static readonly Color Bg = ColorTranslator.FromHtml("#1E1E1E");
@@ -789,6 +791,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             }
         }
 
+        // -------------------- PROMPT PARA TEXTO --------------------
         public static class Prompt
         {
             public static string ShowDialog(string text, string caption)
@@ -814,6 +817,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
         }
     }
 
+    // -------------------- PANEL CON DOBLE BUFFER --------------------
     internal class BufferedPanel : Panel
     {
         public BufferedPanel()
@@ -826,9 +830,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
         }
     }
 
-    // ==================================================================
-    // Iconos vectoriales dibujados a mano (GDI+) — sin dependencias de fuentes
-    // ==================================================================
+    // -------------------- ICONOS VECTORIALES --------------------
     internal static class ToolIcons
     {
         public static void Draw(Graphics g, Rectangle bounds, string key, Color color)

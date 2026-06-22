@@ -7,12 +7,14 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class Circle : Shape
     {
+        // -------------------- CONSTRUCTOR --------------------
         public Circle(PointD center, PointD edge)
         {
             Vertices.Add(center);
             Vertices.Add(edge);
         }
 
+        // -------------------- MÉTODOS PÚBLICOS --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count < 2) return;

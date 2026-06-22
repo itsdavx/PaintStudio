@@ -7,9 +7,11 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class TextShape : Shape
     {
+        // -------------------- PROPIEDADES --------------------
         public string Text { get; set; }
         public Font Font { get; set; }
 
+        // -------------------- CONSTRUCTOR --------------------
         public TextShape(PointD p, string text, Font font)
         {
             Vertices.Add(p);
@@ -17,6 +19,7 @@ namespace PaintStudio.Models
             Font = font;
         }
 
+        // -------------------- DIBUJAR TEXTO --------------------
         public override void Draw(Rasterizer rasterizer)
         {
             if (Vertices.Count == 0 || string.IsNullOrEmpty(Text)) return;
@@ -32,6 +35,7 @@ namespace PaintStudio.Models
             }
         }
 
+        // -------------------- VERIFICAR COLISIÓN --------------------
         public override bool ContainsPoint(PointD p)
         {
             if (Vertices.Count == 0 || string.IsNullOrEmpty(Text)) return false;
