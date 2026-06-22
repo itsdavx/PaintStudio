@@ -33,7 +33,12 @@ namespace PaintStudio.Controllers
 
         private Shape currentShape;
         private bool isDrawing;
+        private bool isResizingShape;
+        private ShapeHandle activeHandle = ShapeHandle.None;
         private Shape selectedShape;
+        private readonly SelectionManager selectionManager = new SelectionManager();
+        public Shape SelectedShape => selectedShape;
+        public SelectionManager Selection => selectionManager;
         private PointD startPoint;
 
         private readonly Stack<System.Collections.Generic.List<Shape>> undoStack = new Stack<System.Collections.Generic.List<Shape>>();
@@ -196,6 +201,17 @@ namespace PaintStudio.Controllers
 
             if (CurrentTool == ToolMode.Select)
             {
+                if (selectedShape != null)
+                {
+                    var handle = selectionManager.HitTestHandles(selectedShape, ZoomFactor, e.Location);
+                    if (handle != ShapeHandle.None)
+                    {
+                        isResizingShape = true;
+                        activeHandle = handle;
+                        SaveUndoState();
+                        return;
+                    }
+                }
                 SelectShapeAt(p);
                 return;
             }
@@ -300,6 +316,18 @@ namespace PaintStudio.Controllers
 
         private void CanvasView_MouseMove(object sender, MouseEventArgs e)
         {
+            if (isResizingShape && selectedShape != null)
+            {
+                ResizeSelectedShape(new PointD(e.X / ZoomFactor, e.Y / ZoomFactor));
+                Redraw();
+                return;
+            }
+
+            if (CurrentTool == ToolMode.Select && selectedShape != null && !isDrawing)
+            {
+                CanvasView.Cursor = CursorForHandle(selectionManager.HitTestHandles(selectedShape, ZoomFactor, e.Location));
+            }
+
             if (!isDrawing || currentShape == null) return;
 
             PointD p = new PointD(e.X / ZoomFactor, e.Y / ZoomFactor);
@@ -346,6 +374,14 @@ namespace PaintStudio.Controllers
 
         private void CanvasView_MouseUp(object sender, MouseEventArgs e)
         {
+            if (isResizingShape)
+            {
+                isResizingShape = false;
+                activeHandle = ShapeHandle.None;
+                CanvasView.Cursor = Cursors.Default;
+                return;
+            }
+
             if (CurrentTool != ToolMode.Polygon && CurrentTool != ToolMode.Bezier)
             {
                 isDrawing = false;
@@ -361,7 +397,46 @@ namespace PaintStudio.Controllers
                 Redraw();
             }
         }
+        private void ResizeSelectedShape(PointD mouse)
+        {
+            var b = selectedShape.GetBounds();
+            double minSize = 4;
+            double left = b.Left, top = b.Top, right = b.Right, bottom = b.Bottom;
+            double anchorX = left, anchorY = top, targetW = b.Width, targetH = b.Height;
 
+            switch (activeHandle)
+            {
+                case ShapeHandle.BottomRight: anchorX = left; anchorY = top; targetW = mouse.X - left; targetH = mouse.Y - top; break;
+                case ShapeHandle.BottomLeft: anchorX = right; anchorY = top; targetW = right - mouse.X; targetH = mouse.Y - top; break;
+                case ShapeHandle.TopRight: anchorX = left; anchorY = bottom; targetW = mouse.X - left; targetH = bottom - mouse.Y; break;
+                case ShapeHandle.TopLeft: anchorX = right; anchorY = bottom; targetW = right - mouse.X; targetH = bottom - mouse.Y; break;
+                case ShapeHandle.MiddleRight: anchorX = left; targetW = mouse.X - left; break;
+                case ShapeHandle.MiddleLeft: anchorX = right; targetW = right - mouse.X; break;
+                case ShapeHandle.BottomCenter: anchorY = top; targetH = mouse.Y - top; break;
+                case ShapeHandle.TopCenter: anchorY = bottom; targetH = bottom - mouse.Y; break;
+                default: return;
+            }
+
+            if (targetW < minSize) targetW = minSize;
+            if (targetH < minSize) targetH = minSize;
+
+            double sx = b.Width > 0 ? targetW / b.Width : 1;
+            double sy = b.Height > 0 ? targetH / b.Height : 1;
+
+            selectedShape.ApplyTransformation(Transformations.GetScaleMatrix(sx, sy, anchorX, anchorY));
+        }
+
+        private Cursor CursorForHandle(ShapeHandle h)
+        {
+            switch (h)
+            {
+                case ShapeHandle.TopLeft: case ShapeHandle.BottomRight: return Cursors.SizeNWSE;
+                case ShapeHandle.TopRight: case ShapeHandle.BottomLeft: return Cursors.SizeNESW;
+                case ShapeHandle.MiddleLeft: case ShapeHandle.MiddleRight: return Cursors.SizeWE;
+                case ShapeHandle.TopCenter: case ShapeHandle.BottomCenter: return Cursors.SizeNS;
+                default: return Cursors.Default;
+            }
+        }
         public void ClearCanvas()
         {
             SaveUndoState();

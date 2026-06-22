@@ -547,6 +547,7 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
         // ==================================================================
         private void AssignCanvasAreaEvents()
         {
+            canvasPicBox.Paint += CanvasPicBox_Paint;
             pnlCenter.Resize += (s, e) => CenterCanvas();
             pnlCenter.Paint += PnlCenter_Paint;
             pnlCenter.MouseDown += PnlCenter_MouseDown;
@@ -578,7 +579,10 @@ toolTip1.SetToolTip(btnColor, "Color de línea");
             };
             return dict;
         }
-
+        private void CanvasPicBox_Paint(object sender, PaintEventArgs e)
+        {
+            controller.Selection.Draw(e.Graphics, controller.SelectedShape, controller.ZoomFactor);
+        }
         private void PnlCenter_Paint(object sender, PaintEventArgs e)
         {
             // Resalte del lienzo: sombra + borde sutil contra el fondo oscuro

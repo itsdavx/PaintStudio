@@ -79,5 +79,19 @@ namespace PaintStudio.Models
             }
             return new PointD(sumX / Vertices.Count, sumY / Vertices.Count);
         }
+
+        public RectangleF GetBounds()
+        {
+            if (Vertices.Count == 0) return RectangleF.Empty;
+            double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
+            foreach (var v in Vertices)
+            {
+                if (v.X < minX) minX = v.X;
+                if (v.Y < minY) minY = v.Y;
+                if (v.X > maxX) maxX = v.X;
+                if (v.Y > maxY) maxY = v.Y;
+            }
+            return new RectangleF((float)minX, (float)minY, (float)(maxX - minX), (float)(maxY - minY));
+        }
     }
 }
