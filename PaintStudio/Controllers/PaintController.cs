@@ -627,5 +627,19 @@ namespace PaintStudio.Controllers
                 e.Graphics.DrawRectangle(Pens.Black, rect);
             }
         }
+        public void ApplyTransformationToSelected(int realIndex, double angle, double scale, double tx, double ty)
+        {
+            if (realIndex < 0 || realIndex >= Model.Shapes.Count) return;
+            var shape = Model.Shapes[realIndex];
+            var c = shape.GetCentroid();
+
+            SaveUndoState();
+
+            if (angle != 0) shape.Rotate(angle, c);
+            if (scale != 1.0) shape.Scale(scale, scale, c);
+            if (tx != 0 || ty != 0) shape.Move(tx, ty);
+
+            Redraw();
+        }
     }
 }

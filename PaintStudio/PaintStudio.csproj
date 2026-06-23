@@ -58,6 +58,18 @@
     <Compile Include="FrmHome.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FrmHome.UI.cs">
+      <DependentUpon>FrmHome.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmHome.Events.cs">
+      <DependentUpon>FrmHome.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmHome.Canvas.cs">
+      <DependentUpon>FrmHome.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FrmHome.Designer.cs">
       <DependentUpon>FrmHome.cs</DependentUpon>
     </Compile>
@@ -83,6 +95,8 @@
     <Compile Include="Utils\Rasterizer.cs" />
     <Compile Include="Utils\GeometryUtils.cs" />
     <Compile Include="Utils\Transformations.cs" />
+    <Compile Include="Utils\ToolIcons.cs" />
+    <Compile Include="Utils\UIHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmHome.resx">
       <DependentUpon>FrmHome.cs</DependentUpon>
