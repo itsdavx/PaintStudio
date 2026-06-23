@@ -22,20 +22,47 @@ namespace PaintStudio.Controllers
         private Shape currentShape;
         private bool isDrawing;
         private bool isResizingShape;
+        private bool isMovingShape;
         private ShapeHandle activeHandle = ShapeHandle.None;
         private Shape selectedShape;
         private PointD startPoint;
+        private PointD lastMousePoint;
+        private bool isMouseInCanvas = false;
+        private Point cursorLocation = Point.Empty;
+        private Cursor transparentCursor;
         private readonly SelectionManager selectionManager = new SelectionManager();
         private readonly Stack<List<Shape>> undoStack = new Stack<List<Shape>>();
         private readonly Stack<List<Shape>> redoStack = new Stack<List<Shape>>();
         private const int MaxUndoSteps = 40;
 
         // -------------------- PROPIEDADES PÚBLICAS --------------------
-        public ToolMode CurrentTool { get; set; } = ToolMode.Freehand;
+        private ToolMode currentTool = ToolMode.Freehand;
+        public ToolMode CurrentTool
+        {
+            get => currentTool;
+            set
+            {
+                currentTool = value;
+                if (CanvasView != null)
+                {
+                    if (currentTool != ToolMode.Erase) CanvasView.Cursor = Cursors.Default;
+                    CanvasView.Invalidate();
+                }
+            }
+        }
         public Color CurrentColor { get; set; } = Color.Black;
         public Color CurrentFillColor { get; set; } = Color.White;
         public bool FillEnabled { get; set; } = false;
-        public int CurrentThickness { get; set; } = 2;
+        private int currentThickness = 2;
+        public int CurrentThickness
+        {
+            get => currentThickness;
+            set
+            {
+                currentThickness = value;
+                if (CanvasView != null && CurrentTool == ToolMode.Erase) CanvasView.Invalidate();
+            }
+        }
         public double ZoomFactor { get; set; } = 1.0;
         public Shape SelectedShape => selectedShape;
         public SelectionManager Selection => selectionManager;
@@ -52,9 +79,18 @@ namespace PaintStudio.Controllers
             Model = new CanvasModel();
             CanvasView = view;
             Renderer = new Rasterizer(view.Width, view.Height);
+            
+            using (Bitmap bmp = new Bitmap(1, 1))
+            {
+                transparentCursor = new Cursor(bmp.GetHicon());
+            }
+
             CanvasView.MouseDown += CanvasView_MouseDown;
             CanvasView.MouseMove += CanvasView_MouseMove;
             CanvasView.MouseUp += CanvasView_MouseUp;
+            CanvasView.Paint += CanvasView_Paint;
+            CanvasView.MouseEnter += (s, e) => { isMouseInCanvas = true; if (CurrentTool == ToolMode.Erase) CanvasView.Invalidate(); };
+            CanvasView.MouseLeave += (s, e) => { isMouseInCanvas = false; if (CurrentTool == ToolMode.Erase) CanvasView.Invalidate(); };
             Redraw();
         }
 
@@ -100,6 +136,33 @@ namespace PaintStudio.Controllers
             }
         }
 
+        public void MoveLayerUp(int index)
+        {
+            SaveUndoState();
+            Model.MoveShapeUp(index);
+            OnLayersChanged?.Invoke();
+            Redraw();
+        }
+
+        public void MoveLayerDown(int index)
+        {
+            SaveUndoState();
+            Model.MoveShapeDown(index);
+            OnLayersChanged?.Invoke();
+            Redraw();
+        }
+
+        public void ToggleLayerVisibility(int index)
+        {
+            if (index >= 0 && index < Model.Shapes.Count)
+            {
+                SaveUndoState();
+                Model.Shapes[index].Visible = !Model.Shapes[index].Visible;
+                OnLayersChanged?.Invoke();
+                Redraw();
+            }
+        }
+
         public void ClearCanvas()
         {
             SaveUndoState();
@@ -121,14 +184,48 @@ namespace PaintStudio.Controllers
         {
             Renderer.Clear(Color.White);
             foreach (var shape in Model.Shapes)
-                shape.Draw(Renderer);
+            {
+                if (shape.Visible)
+                    shape.Draw(Renderer);
+            }
             CanvasView.Image = Renderer.Canvas;
             CanvasView.Refresh();
         }
 
         public void SaveImage(string path)
         {
-            Renderer.Canvas.Save(path);
+            var ext = System.IO.Path.GetExtension(path).ToLower();
+            var format = System.Drawing.Imaging.ImageFormat.Png;
+            if (ext == ".jpg" || ext == ".jpeg") format = System.Drawing.Imaging.ImageFormat.Jpeg;
+            else if (ext == ".bmp") format = System.Drawing.Imaging.ImageFormat.Bmp;
+
+            Redraw(); // ensure up-to-date
+
+            // Create a solid white background image to prevent transparent background issues
+            using (var bmp = new Bitmap(Renderer.Canvas.Width, Renderer.Canvas.Height))
+            {
+                using (var g = Graphics.FromImage(bmp))
+                {
+                    g.Clear(Color.White);
+                    g.DrawImageUnscaled(Renderer.Canvas, 0, 0);
+                }
+                bmp.Save(path, format);
+            }
+        }
+
+        public void ImportImage(string path)
+        {
+            using (var bmp = new Bitmap(path))
+            {
+                SaveUndoState();
+                if (bmp.Width > Renderer.Canvas.Width || bmp.Height > Renderer.Canvas.Height)
+                {
+                    ResizeCanvas(Math.Max(bmp.Width, Renderer.Canvas.Width), Math.Max(bmp.Height, Renderer.Canvas.Height));
+                }
+                Model.AddShape(new ImageShape(new PointD(0, 0), bmp));
+                OnLayersChanged?.Invoke();
+                Redraw();
+            }
         }
 
         public void SaveProject(string path)
@@ -269,7 +366,7 @@ namespace PaintStudio.Controllers
 
             double sx = b.Width > 0 ? targetW / b.Width : 1;
             double sy = b.Height > 0 ? targetH / b.Height : 1;
-            selectedShape.ApplyTransformation(Transformations.GetScaleMatrix(sx, sy, anchorX, anchorY));
+            selectedShape.Scale(sx, sy, new PointD(anchorX, anchorY));
         }
 
         private Cursor CursorForHandle(ShapeHandle h)
@@ -319,6 +416,12 @@ namespace PaintStudio.Controllers
                     }
                 }
                 SelectShapeAt(p);
+                if (selectedShape != null)
+                {
+                    isMovingShape = true;
+                    lastMousePoint = p;
+                    SaveUndoState();
+                }
                 return;
             }
 
@@ -402,7 +505,7 @@ namespace PaintStudio.Controllers
                     ((AirbrushShape)currentShape).AddPoint(p);
                     break;
                 case ToolMode.Erase:
-                    currentShape = new FreehandShape() { LineColor = Color.White, Thickness = CurrentThickness * 4 };
+                    currentShape = new FreehandShape() { LineColor = Color.White, Thickness = CurrentThickness * 4, IsSquare = true };
                     ((FreehandShape)currentShape).AddPoint(p);
                     break;
             }
@@ -418,19 +521,36 @@ namespace PaintStudio.Controllers
 
         private void CanvasView_MouseMove(object sender, MouseEventArgs e)
         {
+            cursorLocation = e.Location;
+            if (CurrentTool == ToolMode.Erase)
+            {
+                if (CanvasView.Cursor != transparentCursor) CanvasView.Cursor = transparentCursor;
+                CanvasView.Invalidate();
+            }
+
+            PointD p = new PointD(e.X / ZoomFactor, e.Y / ZoomFactor);
+
             if (isResizingShape && selectedShape != null)
             {
-                ResizeSelectedShape(new PointD(e.X / ZoomFactor, e.Y / ZoomFactor));
+                ResizeSelectedShape(p);
                 Redraw();
                 return;
             }
 
-            if (CurrentTool == ToolMode.Select && selectedShape != null && !isDrawing)
+            if (isMovingShape && selectedShape != null)
+            {
+                double dx = p.X - lastMousePoint.X;
+                double dy = p.Y - lastMousePoint.Y;
+                selectedShape.Move(dx, dy);
+                lastMousePoint = p;
+                Redraw();
+                return;
+            }
+
+            if (CurrentTool == ToolMode.Select && selectedShape != null && !isDrawing && !isMovingShape)
                 CanvasView.Cursor = CursorForHandle(selectionManager.HitTestHandles(selectedShape, ZoomFactor, e.Location));
 
             if (!isDrawing || currentShape == null) return;
-
-            PointD p = new PointD(e.X / ZoomFactor, e.Y / ZoomFactor);
 
             switch (CurrentTool)
             {
@@ -482,10 +602,29 @@ namespace PaintStudio.Controllers
                 return;
             }
 
+            if (isMovingShape)
+            {
+                isMovingShape = false;
+                CanvasView.Cursor = Cursors.Default;
+                return;
+            }
+
             if (CurrentTool != ToolMode.Polygon && CurrentTool != ToolMode.Bezier)
             {
                 isDrawing = false;
                 currentShape = null;
+            }
+        }
+
+        private void CanvasView_Paint(object sender, PaintEventArgs e)
+        {
+            if (CurrentTool == ToolMode.Erase && isMouseInCanvas)
+            {
+                int size = (int)(CurrentThickness * 4 * ZoomFactor);
+                if (size < 4) size = 4;
+                Rectangle rect = new Rectangle(cursorLocation.X - size / 2, cursorLocation.Y - size / 2, size, size);
+                e.Graphics.FillRectangle(Brushes.White, rect);
+                e.Graphics.DrawRectangle(Pens.Black, rect);
             }
         }
     }

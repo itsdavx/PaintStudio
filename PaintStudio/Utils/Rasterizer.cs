@@ -40,7 +40,7 @@ namespace PaintStudio.Utils
         }
 
         // -------------------- DIBUJAR PÍXEL CON GROSOR --------------------
-        private void SetBrushPixel(int x, int y, Color c, int thickness)
+        private void SetBrushPixel(int x, int y, Color c, int thickness, bool isSquare = false)
         {
             if (thickness <= 1)
             {
@@ -53,7 +53,7 @@ namespace PaintStudio.Utils
             {
                 for (int dx = -radius; dx <= radius; dx++)
                 {
-                    if (dx * dx + dy * dy <= radius * radius)
+                    if (isSquare || (dx * dx + dy * dy <= radius * radius))
                     {
                         SetPixel(x + dx, y + dy, c);
                     }
@@ -62,7 +62,7 @@ namespace PaintStudio.Utils
         }
 
         // -------------------- DIBUJAR LÍNEA --------------------
-        public void DrawLine(int x0, int y0, int x1, int y1, Color c, int thickness = 1)
+        public void DrawLine(int x0, int y0, int x1, int y1, Color c, int thickness = 1, bool isSquare = false)
         {
             int dx = Math.Abs(x1 - x0);
             int dy = Math.Abs(y1 - y0);
@@ -72,7 +72,7 @@ namespace PaintStudio.Utils
 
             while (true)
             {
-                SetBrushPixel(x0, y0, c, thickness);
+                SetBrushPixel(x0, y0, c, thickness, isSquare);
 
                 if (x0 == x1 && y0 == y1) break;
                 int e2 = 2 * err;

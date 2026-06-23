@@ -50,6 +50,26 @@ namespace PaintStudio.Models
                 Shapes.RemoveAt(index);
         }
 
+        public void MoveShapeUp(int index)
+        {
+            if (index >= 0 && index < Shapes.Count - 1)
+            {
+                var shape = Shapes[index];
+                Shapes.RemoveAt(index);
+                Shapes.Insert(index + 1, shape);
+            }
+        }
+
+        public void MoveShapeDown(int index)
+        {
+            if (index > 0 && index < Shapes.Count)
+            {
+                var shape = Shapes[index];
+                Shapes.RemoveAt(index);
+                Shapes.Insert(index - 1, shape);
+            }
+        }
+
         public void SaveToFile(string path)
         {
             using (var stream = new System.IO.FileStream(path, System.IO.FileMode.Create))

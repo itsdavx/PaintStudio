@@ -15,6 +15,7 @@ namespace PaintStudio.Models
         public int Thickness { get; set; }
         public bool IsFilled { get; set; }
         public bool Selected { get; set; }
+        public bool Visible { get; set; }
 
         // -------------------- CONSTRUCTOR --------------------
         public Shape()
@@ -25,6 +26,7 @@ namespace PaintStudio.Models
             Thickness = 1;
             IsFilled = false;
             Selected = false;
+            Visible = true;
         }
 
         // -------------------- CLONAR FIGURA --------------------
@@ -50,6 +52,22 @@ namespace PaintStudio.Models
                 double newY = v.X * matrix[1, 0] + v.Y * matrix[1, 1] + matrix[1, 2];
                 Vertices[i] = new PointD(newX, newY);
             }
+        }
+
+        // -------------------- POO: MÉTODOS DE TRANSFORMACIÓN --------------------
+        public virtual void Move(double dx, double dy)
+        {
+            ApplyTransformation(Transformations.GetTranslationMatrix(dx, dy));
+        }
+
+        public virtual void Rotate(double angleDegrees, PointD center)
+        {
+            ApplyTransformation(Transformations.GetRotationMatrix(angleDegrees, center.X, center.Y));
+        }
+
+        public virtual void Scale(double sx, double sy, PointD center)
+        {
+            ApplyTransformation(Transformations.GetScaleMatrix(sx, sy, center.X, center.Y));
         }
 
         // -------------------- VERIFICAR COLISIÓN --------------------

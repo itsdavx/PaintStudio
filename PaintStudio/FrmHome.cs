@@ -17,6 +17,7 @@ namespace PaintStudio
         private Button btnFillColorBtn;
         private CheckBox chkFillEnabled;
         private NumericUpDown numThickness;
+        private Guna2Button btnMoveUpLayer, btnMoveDownLayer, btnToggleVisibleLayer;
         private ToolTip toolTip1;
 
         private static readonly Dictionary<string, string> ToolTipTexts = new Dictionary<string, string>
@@ -154,7 +155,7 @@ namespace PaintStudio
             AssignMenuEvents();
             AssignCanvasResizeEvents();
             AssignZoomEvents();
-            AssignDeleteLayersButton();
+            AssignLayersButtons();
             AssignCanvasAreaEvents();
 
             btnUndo.Enabled = false;
@@ -396,23 +397,60 @@ namespace PaintStudio
         // -------------------- CAPAS --------------------
         private void BuildLayersHeader()
         {
+            int btnSize = 24;
+            int x = Math.Max(0, lblLayersTitle.Width - btnSize - 8);
+
             btnDeleteLayer = new Guna2Button
+            {
+                Size = new Size(btnSize, btnSize),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BorderRadius = 6,
+                FillColor = ColorCard,
+                ForeColor = Color.White,
+                Text = "",
+                Cursor = Cursors.Hand,
+                Location = new Point(x, 2)
+            };
+            btnDeleteLayer.HoverState.FillColor = ColorTranslator.FromHtml("#A32D2D");
+            btnDeleteLayer.Paint += (s, e) => ToolIcons.Draw(e.Graphics, btnDeleteLayer.ClientRectangle, "trash", Color.White);
+            lblLayersTitle.Controls.Add(btnDeleteLayer);
+            toolTip1.SetToolTip(btnDeleteLayer, "Eliminar capa(s) seleccionada(s)");
+
+            x -= (btnSize + 4);
+            btnMoveDownLayer = CreateLayerTextButton("▼", ColorHover, x);
+            lblLayersTitle.Controls.Add(btnMoveDownLayer);
+            toolTip1.SetToolTip(btnMoveDownLayer, "Bajar capa");
+
+            x -= (btnSize + 4);
+            btnMoveUpLayer = CreateLayerTextButton("▲", ColorHover, x);
+            lblLayersTitle.Controls.Add(btnMoveUpLayer);
+            toolTip1.SetToolTip(btnMoveUpLayer, "Subir capa");
+
+            x -= (btnSize + 4);
+            btnToggleVisibleLayer = CreateLayerTextButton("👁", ColorHover, x);
+            lblLayersTitle.Controls.Add(btnToggleVisibleLayer);
+            toolTip1.SetToolTip(btnToggleVisibleLayer, "Mostrar/Ocultar capa");
+
+            toolTip1.SetToolTip(lblLayersTitle, "Administración de capas");
+            toolTip1.SetToolTip(lstLayers, "Lista de capas del lienzo");
+        }
+
+        private Guna2Button CreateLayerTextButton(string text, Color hoverColor, int x)
+        {
+            var btn = new Guna2Button
             {
                 Size = new Size(24, 24),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 BorderRadius = 6,
                 FillColor = ColorCard,
                 ForeColor = Color.White,
-                Text = "",
-                Cursor = Cursors.Hand
+                Text = text,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Location = new Point(x, 2)
             };
-            btnDeleteLayer.Location = new Point(Math.Max(0, lblLayersTitle.Width - btnDeleteLayer.Width - 8), 2);
-            btnDeleteLayer.HoverState.FillColor = ColorTranslator.FromHtml("#A32D2D");
-            btnDeleteLayer.Paint += (s, e) => ToolIcons.Draw(e.Graphics, btnDeleteLayer.ClientRectangle, "trash", Color.White);
-            lblLayersTitle.Controls.Add(btnDeleteLayer);
-            toolTip1.SetToolTip(btnDeleteLayer, "Eliminar capa(s) seleccionada(s)");
-            toolTip1.SetToolTip(lblLayersTitle, "Administración de capas");
-            toolTip1.SetToolTip(lstLayers, "Lista de capas del lienzo");
+            btn.HoverState.FillColor = hoverColor;
+            return btn;
         }
 
         // -------------------- STATUS BAR --------------------
@@ -435,6 +473,22 @@ namespace PaintStudio
                 if (MessageBox.Show("¿Limpiar todo el lienzo? Esta acción se puede deshacer.", "Nuevo", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     controller.ClearCanvas();
             };
+
+            var abrirImgItem = new ToolStripMenuItem("Abrir Imagen...");
+            abrirImgItem.Click += (s, e) => {
+                openFileDialog1.Filter = "Archivos de imagen|*.png;*.jpg;*.jpeg;*.bmp|Todos los archivos|*.*";
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    controller.ImportImage(openFileDialog1.FileName);
+                    numCanvasWidth.Value = Clamp(controller.GetCanvasSize().Width, numCanvasWidth.Minimum, numCanvasWidth.Maximum);
+                    numCanvasHeight.Value = Clamp(controller.GetCanvasSize().Height, numCanvasHeight.Minimum, numCanvasHeight.Maximum);
+                    lblStatusCanvas.Text = $"{controller.GetCanvasSize().Width} x {controller.GetCanvasSize().Height} px";
+                    CenterCanvas();
+                }
+            };
+            if (nuevoToolStripMenuItem.Owner != null)
+                nuevoToolStripMenuItem.Owner.Items.Insert(1, abrirImgItem);
+
             salirToolStripMenuItem.Click += (s, e) => Application.Exit();
             guardarProyectoToolStripMenuItem.Click += (s, e) => {
                 saveFileDialog1.Filter = "Paint Project|*.paintproj";
@@ -483,9 +537,43 @@ namespace PaintStudio
             };
         }
 
-        private void AssignDeleteLayersButton()
+        private void AssignLayersButtons()
         {
             btnDeleteLayer.Click += (s, e) => DeleteSelectedLayers();
+
+            btnMoveUpLayer.Click += (s, e) => {
+                if (lstLayers.SelectedIndices.Count == 1)
+                {
+                    int index = lstLayers.SelectedIndex;
+                    int realIndex = (controller.GetShapes().Count - 1) - index;
+                    if (realIndex < controller.GetShapes().Count - 1)
+                    {
+                        controller.MoveLayerUp(realIndex);
+                        lstLayers.SelectedIndex = index - 1;
+                    }
+                }
+            };
+
+            btnMoveDownLayer.Click += (s, e) => {
+                if (lstLayers.SelectedIndices.Count == 1)
+                {
+                    int index = lstLayers.SelectedIndex;
+                    int realIndex = (controller.GetShapes().Count - 1) - index;
+                    if (realIndex > 0)
+                    {
+                        controller.MoveLayerDown(realIndex);
+                        lstLayers.SelectedIndex = index + 1;
+                    }
+                }
+            };
+
+            btnToggleVisibleLayer.Click += (s, e) => {
+                foreach (int index in lstLayers.SelectedIndices)
+                {
+                    int realIndex = (controller.GetShapes().Count - 1) - index;
+                    controller.ToggleLayerVisibility(realIndex);
+                }
+            };
         }
 
         private void DeleteSelectedLayers()
@@ -507,7 +595,8 @@ namespace PaintStudio
             var shapes = controller.GetShapes();
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
-                lstLayers.Items.Add($"({i}) {shapes[i].GetType().Name}");
+                string vis = shapes[i].Visible ? "" : " [Oculta]";
+                lstLayers.Items.Add($"({i}) {shapes[i].GetType().Name}{vis}");
             }
             if (prevIndex >= 0 && prevIndex < lstLayers.Items.Count)
                 lstLayers.SelectedIndex = prevIndex;
@@ -529,15 +618,15 @@ namespace PaintStudio
             double angle = (double)numRot.Value;
             double scale = (double)numScale.Value / 100.0;
             double tx = (double)numTransX.Value;
-            double ty = (double)numTransY.Value;
+            double ty = -(double)numTransY.Value;
 
             if (angle == 0 && scale == 1.0 && tx == 0 && ty == 0) return;
 
             controller.SaveUndoState();
 
-            if (angle != 0) shape.ApplyTransformation(PaintStudio.Utils.Transformations.GetRotationMatrix(angle, c.X, c.Y));
-            if (scale != 1.0) shape.ApplyTransformation(PaintStudio.Utils.Transformations.GetScaleMatrix(scale, scale, c.X, c.Y));
-            if (tx != 0 || ty != 0) shape.ApplyTransformation(PaintStudio.Utils.Transformations.GetTranslationMatrix(tx, ty));
+            if (angle != 0) shape.Rotate(angle, c);
+            if (scale != 1.0) shape.Scale(scale, scale, c);
+            if (tx != 0 || ty != 0) shape.Move(tx, ty);
             numRot.Value = 0;
             numScale.Value = 100;
             numTransX.Value = 0;
@@ -833,103 +922,204 @@ namespace PaintStudio
     // -------------------- ICONOS VECTORIALES --------------------
     internal static class ToolIcons
     {
-        public static void Draw(Graphics g, Rectangle bounds, string key, Color color)
+        public static void Draw(Graphics g, Rectangle bounds, string key, Color fallbackColor)
         {
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            var r = Rectangle.Inflate(bounds, -(int)(bounds.Width * 0.28f), -(int)(bounds.Height * 0.28f));
-            using (var pen = new Pen(color, 1.7f) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round })
-            using (var brush = new SolidBrush(color))
+            var r = Rectangle.Inflate(bounds, -(int)(bounds.Width * 0.2f), -(int)(bounds.Height * 0.2f));
+            float cx = bounds.Left + bounds.Width / 2f;
+            float cy = bounds.Top + bounds.Height / 2f;
+            float w = r.Width;
+            float h = r.Height;
+
+            using (var pen = new Pen(Color.Black, 1.5f) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round })
+            using (var brush = new SolidBrush(Color.Black))
             {
                 switch (key)
                 {
                     case "select":
-                        g.FillPolygon(brush, new[] {
-                            new Point(r.Left, r.Top), new Point(r.Left, r.Bottom),
-                            new Point(r.Left + r.Width / 2, r.Bottom - r.Height / 4),
-                            new Point(r.Right, r.Top + r.Height / 2)
-                        });
+                        PointF[] cursorPts = {
+                            new PointF(r.Left + w*0.2f, r.Top),
+                            new PointF(r.Left + w*0.2f, r.Bottom - h*0.1f),
+                            new PointF(r.Left + w*0.4f, r.Bottom - h*0.3f),
+                            new PointF(r.Left + w*0.6f, r.Bottom + h*0.1f),
+                            new PointF(r.Left + w*0.75f, r.Bottom),
+                            new PointF(r.Left + w*0.55f, r.Bottom - h*0.4f),
+                            new PointF(r.Right, r.Bottom - h*0.4f)
+                        };
+                        g.FillPolygon(Brushes.White, cursorPts);
+                        g.DrawPolygon(pen, cursorPts);
                         break;
+
                     case "pencil":
-                        g.DrawLine(pen, r.Left, r.Bottom, r.Right - 4, r.Top + 4);
-                        g.FillPolygon(brush, new[] { new Point(r.Right - 6, r.Top), new Point(r.Right, r.Top), new Point(r.Right, r.Top + 6) });
+                        var st = g.Save();
+                        g.TranslateTransform(cx, cy);
+                        g.RotateTransform(45);
+                        g.TranslateTransform(-cx, -cy);
+                        // Eraser
+                        g.FillRectangle(Brushes.LightPink, cx - w*0.15f, cy - h*0.4f, w*0.3f, h*0.2f);
+                        g.DrawRectangle(pen, cx - w*0.15f, cy - h*0.4f, w*0.3f, h*0.2f);
+                        // Metal
+                        g.FillRectangle(Brushes.Silver, cx - w*0.15f, cy - h*0.2f, w*0.3f, h*0.1f);
+                        g.DrawRectangle(pen, cx - w*0.15f, cy - h*0.2f, w*0.3f, h*0.1f);
+                        // Wood body
+                        g.FillRectangle(Brushes.Gold, cx - w*0.15f, cy - h*0.1f, w*0.3f, h*0.4f);
+                        g.DrawRectangle(pen, cx - w*0.15f, cy - h*0.1f, w*0.3f, h*0.4f);
+                        // Cone
+                        PointF[] cone = { new PointF(cx - w*0.15f, cy + h*0.3f), new PointF(cx + w*0.15f, cy + h*0.3f), new PointF(cx, cy + h*0.5f) };
+                        g.FillPolygon(Brushes.BurlyWood, cone);
+                        g.DrawPolygon(pen, cone);
+                        // Tip
+                        PointF[] tip = { new PointF(cx - w*0.05f, cy + h*0.43f), new PointF(cx + w*0.05f, cy + h*0.43f), new PointF(cx, cy + h*0.5f) };
+                        g.FillPolygon(Brushes.Black, tip);
+                        g.Restore(st);
                         break;
-                    case "bezier":
-                        g.DrawBezier(pen, r.Left, r.Bottom, r.Left + r.Width / 3, r.Top, r.Right - r.Width / 3, r.Bottom, r.Right, r.Top);
-                        break;
-                    case "eraser":
-                        g.DrawRectangle(pen, r.Left, r.Top + r.Height / 4, r.Width, r.Height / 2);
-                        g.DrawLine(pen, r.Left, r.Top + r.Height / 4, r.Left + r.Width / 3, r.Top);
-                        g.DrawLine(pen, r.Right, r.Top + r.Height / 4, r.Left + r.Width * 2 / 3, r.Top);
-                        break;
+
                     case "fill":
-                        g.FillEllipse(brush, r.Left, r.Top + r.Height / 3, r.Width, r.Height * 2 / 3);
-                        g.FillPolygon(brush, new[] { new Point(r.Left + r.Width / 2 - 3, r.Top), new Point(r.Left + r.Width / 2 + 3, r.Top), new Point(r.Left + r.Width / 2, r.Top + r.Height / 3) });
+                        var stF = g.Save();
+                        g.TranslateTransform(cx, cy);
+                        g.RotateTransform(-25);
+                        g.TranslateTransform(-cx, -cy);
+                        // Paint spilling
+                        g.FillEllipse(Brushes.DodgerBlue, cx - w*0.4f, cy + h*0.1f, w*0.6f, h*0.4f);
+                        PointF[] spill = { new PointF(cx - w*0.3f, cy), new PointF(cx + w*0.1f, cy), new PointF(cx - w*0.1f, cy + h*0.5f) };
+                        g.FillPolygon(Brushes.DodgerBlue, spill);
+                        // Bucket
+                        g.FillRectangle(Brushes.Silver, cx - w*0.2f, cy - h*0.3f, w*0.5f, h*0.5f);
+                        g.DrawRectangle(pen, cx - w*0.2f, cy - h*0.3f, w*0.5f, h*0.5f);
+                        // Handle
+                        g.DrawArc(pen, cx - w*0.3f, cy - h*0.4f, w*0.7f, h*0.3f, 180, 180);
+                        // Bucket top
+                        g.FillEllipse(Brushes.Gray, cx - w*0.2f, cy - h*0.35f, w*0.5f, h*0.1f);
+                        g.DrawEllipse(pen, cx - w*0.2f, cy - h*0.35f, w*0.5f, h*0.1f);
+                        g.Restore(stF);
                         break;
+
+                    case "eraser":
+                        // 3D Eraser
+                        PointF[] topFace = { new PointF(cx - w*0.3f, cy), new PointF(cx, cy - h*0.3f), new PointF(cx + w*0.4f, cy - h*0.1f), new PointF(cx + w*0.1f, cy + h*0.2f) };
+                        PointF[] leftFace = { new PointF(cx - w*0.3f, cy), new PointF(cx + w*0.1f, cy + h*0.2f), new PointF(cx + w*0.1f, cy + h*0.4f), new PointF(cx - w*0.3f, cy + h*0.2f) };
+                        PointF[] rightFace = { new PointF(cx + w*0.1f, cy + h*0.2f), new PointF(cx + w*0.4f, cy - h*0.1f), new PointF(cx + w*0.4f, cy + h*0.1f), new PointF(cx + w*0.1f, cy + h*0.4f) };
+                        g.FillPolygon(Brushes.White, topFace);
+                        g.DrawPolygon(pen, topFace);
+                        g.FillPolygon(Brushes.LightPink, leftFace);
+                        g.DrawPolygon(pen, leftFace);
+                        g.FillPolygon(Brushes.HotPink, rightFace);
+                        g.DrawPolygon(pen, rightFace);
+                        break;
+
                     case "picker":
-                        g.DrawLine(pen, r.Left, r.Bottom, r.Right - 6, r.Top + 6);
-                        g.DrawEllipse(pen, r.Right - 9, r.Top, 9, 9);
+                        var stP = g.Save();
+                        g.TranslateTransform(cx, cy);
+                        g.RotateTransform(45);
+                        g.TranslateTransform(-cx, -cy);
+                        // Bulb
+                        g.FillRectangle(Brushes.DimGray, cx - w*0.15f, cy - h*0.4f, w*0.3f, h*0.2f);
+                        g.DrawRectangle(pen, cx - w*0.15f, cy - h*0.4f, w*0.3f, h*0.2f);
+                        g.FillEllipse(Brushes.DimGray, cx - w*0.15f, cy - h*0.5f, w*0.3f, h*0.2f);
+                        g.DrawEllipse(pen, cx - w*0.15f, cy - h*0.5f, w*0.3f, h*0.2f);
+                        // Glass
+                        g.FillRectangle(Brushes.LightCyan, cx - w*0.1f, cy - h*0.2f, w*0.2f, h*0.4f);
+                        g.DrawRectangle(pen, cx - w*0.1f, cy - h*0.2f, w*0.2f, h*0.4f);
+                        // Tip
+                        PointF[] tipP = { new PointF(cx - w*0.1f, cy + h*0.2f), new PointF(cx + w*0.1f, cy + h*0.2f), new PointF(cx, cy + h*0.4f) };
+                        g.FillPolygon(Brushes.LightCyan, tipP);
+                        g.DrawPolygon(pen, tipP);
+                        g.Restore(stP);
                         break;
+
                     case "text":
-                        using (var f = new Font("Segoe UI", Math.Max(8f, r.Height * 0.9f), FontStyle.Bold))
-                            g.DrawString("A", f, brush, r.Left - 2, r.Top - 5);
+                        using (var f = new Font("Arial Black", h, FontStyle.Bold))
+                        {
+                            var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                            g.DrawString("A", f, Brushes.RoyalBlue, cx, cy + 2, sf);
+                        }
                         break;
+
+                    case "bezier":
+                        pen.Color = fallbackColor;
+                        g.DrawBezier(pen, r.Left, r.Bottom, r.Left + w * 0.3f, r.Top - h * 0.2f, r.Right - w * 0.3f, r.Bottom + h * 0.2f, r.Right, r.Top);
+                        break;
+
                     case "line":
+                        pen.Color = fallbackColor;
                         g.DrawLine(pen, r.Left, r.Bottom, r.Right, r.Top);
                         break;
+
                     case "rect":
-                        g.DrawRectangle(pen, r);
+                        pen.Color = fallbackColor;
+                        g.DrawRectangle(pen, r.Left, r.Top, w, h);
                         break;
+
                     case "circle":
-                        g.DrawEllipse(pen, r);
+                        pen.Color = fallbackColor;
+                        g.DrawEllipse(pen, r.Left, r.Top, w, h);
                         break;
+
                     case "polygon":
+                        pen.Color = fallbackColor;
                         g.DrawPolygon(pen, HexPoints(r));
                         break;
+
                     case "triangle":
-                        g.DrawPolygon(pen, new[] { new Point(r.Left + r.Width / 2, r.Top), new Point(r.Left, r.Bottom), new Point(r.Right, r.Bottom) });
+                        pen.Color = fallbackColor;
+                        g.DrawPolygon(pen, new[] { new PointF(cx, r.Top), new PointF(r.Left, r.Bottom), new PointF(r.Right, r.Bottom) });
                         break;
+
                     case "star":
+                        pen.Color = fallbackColor;
                         g.DrawPolygon(pen, StarPoints(r));
                         break;
+
                     case "undo":
-                        g.DrawArc(pen, r.Left, r.Top, r.Width, r.Height, 90, 200);
-                        g.FillPolygon(brush, new[] { new Point(r.Left, r.Top + r.Height / 2 - 5), new Point(r.Left + 7, r.Top + r.Height / 2 - 5), new Point(r.Left + 3, r.Top + r.Height / 2 + 3) });
+                        using (var arrowPen = new Pen(Color.RoyalBlue, 2.5f))
+                        {
+                            arrowPen.CustomEndCap = new System.Drawing.Drawing2D.AdjustableArrowCap(4, 4, true);
+                            g.DrawArc(arrowPen, r.Left + w * 0.1f, r.Top + h * 0.2f, w * 0.8f, h * 0.6f, 20, -200);
+                        }
                         break;
+
                     case "redo":
-                        g.DrawArc(pen, r.Left, r.Top, r.Width, r.Height, -90, -200);
-                        g.FillPolygon(brush, new[] { new Point(r.Right, r.Top + r.Height / 2 - 5), new Point(r.Right - 7, r.Top + r.Height / 2 - 5), new Point(r.Right - 3, r.Top + r.Height / 2 + 3) });
+                        using (var arrowPen = new Pen(Color.RoyalBlue, 2.5f))
+                        {
+                            arrowPen.CustomEndCap = new System.Drawing.Drawing2D.AdjustableArrowCap(4, 4, true);
+                            g.DrawArc(arrowPen, r.Left + w * 0.1f, r.Top + h * 0.2f, w * 0.8f, h * 0.6f, 160, 200);
+                        }
                         break;
+
                     case "trash":
-                        g.DrawRectangle(pen, r.Left + 2, r.Top + 4, r.Width - 4, r.Height - 6);
-                        g.DrawLine(pen, r.Left, r.Top + 4, r.Right, r.Top + 4);
-                        g.DrawLine(pen, r.Left + r.Width / 2 - 3, r.Top, r.Left + r.Width / 2 + 3, r.Top);
+                        pen.Color = fallbackColor;
+                        g.DrawLine(pen, r.Left, r.Top + h * 0.2f, r.Right, r.Top + h * 0.2f);
+                        g.DrawRectangle(pen, r.Left + w * 0.2f, r.Top + h * 0.2f, w * 0.6f, h * 0.8f);
+                        g.DrawLine(pen, r.Left + w * 0.35f, r.Top, r.Left + w * 0.65f, r.Top);
+                        g.DrawLine(pen, r.Left + w * 0.35f, r.Top, r.Left + w * 0.35f, r.Top + h * 0.2f);
+                        g.DrawLine(pen, r.Left + w * 0.65f, r.Top, r.Left + w * 0.65f, r.Top + h * 0.2f);
                         break;
                 }
             }
         }
 
-        private static Point[] HexPoints(Rectangle r)
+        private static PointF[] HexPoints(Rectangle r)
         {
-            var pts = new Point[6];
+            var pts = new PointF[6];
             double cx = r.Left + r.Width / 2.0, cy = r.Top + r.Height / 2.0;
             for (int i = 0; i < 6; i++)
             {
                 double angle = Math.PI / 3 * i - Math.PI / 2;
-                pts[i] = new Point((int)(cx + r.Width / 2.0 * Math.Cos(angle)), (int)(cy + r.Height / 2.0 * Math.Sin(angle)));
+                pts[i] = new PointF((float)(cx + r.Width / 2.0 * Math.Cos(angle)), (float)(cy + r.Height / 2.0 * Math.Sin(angle)));
             }
             return pts;
         }
 
-        private static Point[] StarPoints(Rectangle r)
+        private static PointF[] StarPoints(Rectangle r)
         {
-            var pts = new Point[10];
+            var pts = new PointF[10];
             double cx = r.Left + r.Width / 2.0, cy = r.Top + r.Height / 2.0;
             double outerR = r.Width / 2.0, innerR = outerR * 0.45;
             for (int i = 0; i < 10; i++)
             {
                 double angle = Math.PI / 5 * i - Math.PI / 2;
                 double radius = (i % 2 == 0) ? outerR : innerR;
-                pts[i] = new Point((int)(cx + radius * Math.Cos(angle)), (int)(cy + radius * Math.Sin(angle)));
+                pts[i] = new PointF((float)(cx + radius * Math.Cos(angle)), (float)(cy + radius * Math.Sin(angle)));
             }
             return pts;
         }

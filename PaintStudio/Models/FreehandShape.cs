@@ -7,6 +7,8 @@ namespace PaintStudio.Models
     [System.Serializable]
     public class FreehandShape : Shape
     {
+        public bool IsSquare { get; set; } = false;
+
         // -------------------- AGREGAR PUNTOS --------------------
         public void AddPoint(PointD p)
         {
@@ -24,7 +26,7 @@ namespace PaintStudio.Models
                 var v1 = Vertices[i];
                 var v2 = Vertices[i + 1];
                 rasterizer.DrawLine((int)Math.Round(v1.X), (int)Math.Round(v1.Y),
-                                    (int)Math.Round(v2.X), (int)Math.Round(v2.Y), c, Thickness);
+                                    (int)Math.Round(v2.X), (int)Math.Round(v2.Y), c, Thickness, IsSquare);
             }
         }
 
